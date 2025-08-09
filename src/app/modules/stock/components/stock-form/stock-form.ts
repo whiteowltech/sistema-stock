@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 @Component({
   selector: 'app-stock-form',
@@ -8,4 +8,33 @@ import { Component } from '@angular/core';
 })
 export class StockForm {
 
+@Output() movimientoCreado = new EventEmitter<any>();
+
+  form = {
+    fecha: new Date().toISOString().split('T')[0],
+    nombre: '',
+    tipo: 'ingreso',
+    cantidad: 1,
+    comentario: ''
+  };
+
+  enviar() {
+    if (!this.form.nombre || this.form.cantidad <= 0) {
+      alert('Por favor completá todos los campos obligatorios.');
+      return;
+    }
+
+    this.movimientoCreado.emit({ ...this.form });
+    this.resetearFormulario();
+  }
+
+  resetearFormulario() {
+    this.form = {
+      fecha: new Date().toISOString().split('T')[0],
+      nombre: '',
+      tipo: 'ingreso',
+      cantidad: 1,
+      comentario: ''
+    };
+  }
 }

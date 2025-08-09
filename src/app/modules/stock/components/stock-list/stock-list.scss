@@ -1,10 +1,19 @@
+.stock-list
+{
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0; // Necesario para aplicar border-radius
-  overflow: hidden;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-width: 600px; /* Evita que las columnas se aplasten demasiado */
 
   th, td {
     padding: 0.75rem 1rem;
@@ -32,13 +41,18 @@ table {
   tbody tr:last-child td:last-child {
     border-bottom-right-radius: 12px;
   }
-}
 
-.titulo {
+  border-collapse: collapse;
+}
+.log_header{
   font-size: 1.6rem;
   margin-bottom: 1rem;
   font-weight: 600;
+  background-color: #28333b;
+  color:white;
+  padding: 0.5rem 1rem;
 }
+
 
 .ingreso {
   color: green;
@@ -66,4 +80,26 @@ table {
       background-color: #cfcfcf;
     }
   }
+}
+.log_header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Título a la izquierda, icono a la derecha */
+}
+
+.titulo {
+  margin: 0;
+}
+
+.fondo {
+  width: 65px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+  margin-left: 1rem;
+}
+
+.tabla-container {
+  width: 100%;
+  overflow-x: auto; /* Activa scroll horizontal si no entra el contenido */
 }

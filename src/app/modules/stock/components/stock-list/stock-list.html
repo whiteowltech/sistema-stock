@@ -1,39 +1,45 @@
-<h2 class="titulo">Historial de Movimientos</h2>
+<div class="stock-list">
+  <div class="log_header">
+    <h2 class="titulo">Historial de Movimientos</h2>
+    <img src="logo.png" alt="Fondo" class="fondo" />
+  </div>
 
-<div class="filtros">
-  <button (click)="setFiltro('todos')">Todos</button>
-  <button (click)="setFiltro('ingreso')">Ingresos</button>
-  <button (click)="setFiltro('egreso')">Egresos</button>
+  <div class="filtros">
+    <button (click)="setFiltro('todos')">Todos</button>
+    <button (click)="setFiltro('ingreso')">Ingresos</button>
+    <button (click)="setFiltro('egreso')">Egresos</button>
+  </div>
+
+  <div class="tabla-container">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Modelo</th>
+          <th>Movimiento</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of filteredItems; track item.id) {
+          <tr>
+            <td>{{ item.fecha }}</td>
+            <td>{{ item.nombre }}</td>
+            <td>
+              @if (item.tipo === 'ingreso') {
+                <span class="ingreso">
+                  <span class="material-icons">arrow_upward</span> Ingreso
+                </span>
+              } @else if (item.tipo === 'egreso') {
+                <span class="egreso">
+                  <span class="material-icons">arrow_downward</span> Egreso
+                </span>
+              }
+            </td>
+            <td>{{ item.comentario }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
 </div>
-
-<table class="tabla">
-  <thead>
-    <tr>
-      <th>Fecha</th>
-      <th>Modelo</th>
-      <th>Movimiento</th>
-      <th>Comentario</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (item of filteredItems; track item.id) {
-      <tr>
-        <td>{{ item.fecha }}</td>
-        <td>{{ item.nombre }}</td>
-        <td>
-          @if (item.tipo === 'ingreso') {
-            <span class="ingreso">
-              <span class="material-icons">arrow_upward</span> Ingreso
-            </span>
-          } @else if (item.tipo === 'egreso') {
-            <span class="egreso">
-              <span class="material-icons">arrow_downward</span> Egreso
-            </span>
-          }
-        </td>
-
-        <td>{{ item.comentario }}</td>
-      </tr>
-    }
-  </tbody>
-</table>
