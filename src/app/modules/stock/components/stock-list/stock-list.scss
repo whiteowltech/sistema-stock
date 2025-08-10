@@ -200,3 +200,16 @@ table {
   }
 }
 
+
+
+.acciones button {
+  background: #10b981; /* verde */
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: filter .2s ease;
+}
+.acciones button:hover { filter: brightness(0.95); }
