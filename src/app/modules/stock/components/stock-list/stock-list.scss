@@ -103,3 +103,15 @@ table {
   width: 100%;
   overflow-x: auto; /* Activa scroll horizontal si no entra el contenido */
 }
+.cantidad{
+  font-weight: bold;
+  color: #333;
+  text-align: center;
+  width: 100px; /* Ancho fijo para la columna de cantidad */
+}
+.modulo-item{
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e0e0e0;
+}

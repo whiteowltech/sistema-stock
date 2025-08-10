@@ -1,8 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+
+html{
+   zoom: 1.5;
+}
+@media (max-width: 1200px) {
+  html {
+    zoom: 0; /* Ajusta el zoom para pantallas más pequeñas */
+  }
+}
 body {
   font-family: 'Roboto', sans-serif;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   color: #333;
+}
+.marca_agua {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  opacity: 0.1;
+  width: 200px; /* Ajusta el tamaño según sea necesario */
+  height: auto;
+  pointer-events: none; /* Evita que interfiera con la interacción del usuario */
+  z-index: 10; /* Asegura que esté detrás de otros elementos */
+  background-color: transparent; /* Asegura que el fondo sea transparente */
+  margin: 5px; /* Espacio alrededor de la imagen */
+  padding: 5px; /* Espacio interno */
+  border-radius: 8px; /* Bordes redondeados para un mejor aspecto */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra sutil para destacar la imagen */
+  display: block; /* Asegura que se muestre como un bloque */
+  transition: opacity 0.3s ease; /* Suaviza la transición de opacidad */
+  &:hover {
+    opacity: 0; /* Aumenta la opacidad al pasar el mouse */
+  }
 }

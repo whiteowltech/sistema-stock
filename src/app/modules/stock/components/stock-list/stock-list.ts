@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { StockService  } from '../../../../core/services/stock';
-import { StockItem } from '../../../../interfaces/stock';
+import { MovimientoView, TipoMovimiento } from '../../../../interfaces/stock';
 import { NgClass } from '@angular/common';
 
 @Component({
@@ -9,28 +9,22 @@ import { NgClass } from '@angular/common';
   styleUrls: ['./stock-list.scss'],
   imports: [NgClass],
 })
-export class StockListComponent implements OnInit {
-  stockItems: StockItem[] = [];
-  filteredItems: StockItem[] = [];
-  filtro: 'todos' | 'ingreso' | 'egreso' = 'todos';
+export class StockListComponent implements OnChanges {
+  @Input() movimientos: MovimientoView[] = [];
 
-  constructor(private stockService: StockService) {}
+  filtro: 'todos' | TipoMovimiento = 'todos';
+  filtered: MovimientoView[] = [];
 
-  ngOnInit(): void {
-    this.stockItems = this.stockService.getStock();
-    this.filtrar();
+  ngOnChanges() { this.applyFilter(); }
+
+  setFiltro(f: 'todos' | TipoMovimiento) {
+    this.filtro = f;
+    this.applyFilter();
   }
 
-  filtrar(): void {
-    if (this.filtro === 'todos') {
-      this.filteredItems = this.stockItems;
-    } else {
-      this.filteredItems = this.stockItems.filter(item => item.tipo === this.filtro);
-    }
-  }
-
-  setFiltro(tipo: 'todos' | 'ingreso' | 'egreso'): void {
-    this.filtro = tipo;
-    this.filtrar();
+  private applyFilter() {
+    this.filtered = this.filtro === 'todos'
+      ? this.movimientos
+      : this.movimientos.filter(m => m.tipo === this.filtro);
   }
 }

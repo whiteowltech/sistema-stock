@@ -1,8 +1,10 @@
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-stock-form',
-  imports: [],
+  imports: [CommonModule, FormsModule],
   templateUrl: './stock-form.html',
   styleUrl: './stock-form.scss'
 })

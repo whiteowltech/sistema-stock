@@ -1,7 +1,7 @@
+<!-- modules/stock/components/movement-list/movement-list.component.html -->
 <div class="stock-list">
   <div class="log_header">
     <h2 class="titulo">Historial de Movimientos</h2>
-    <img src="logo.png" alt="Fondo" class="fondo" />
   </div>
 
   <div class="filtros">
@@ -20,24 +20,41 @@
           <th>Comentario</th>
         </tr>
       </thead>
+
       <tbody>
-        @for (item of filteredItems; track item.id) {
+        @for (m of filtered; track m.id) {
           <tr>
-            <td>{{ item.fecha }}</td>
-            <td>{{ item.nombre }}</td>
+            <td>{{ m.fecha }}</td>
+
+            <!-- Modelo con acordeón de módulos -->
             <td>
-              @if (item.tipo === 'ingreso') {
-                <span class="ingreso">
-                  <span class="material-icons">arrow_upward</span> Ingreso
-                </span>
-              } @else if (item.tipo === 'egreso') {
-                <span class="egreso">
-                  <span class="material-icons">arrow_downward</span> Egreso
-                </span>
+              <details>
+                <summary>{{ m.modelo }}</summary>
+                <ul class="mods">
+                  @for (it of m.items; track it.modulo) {
+                    <li class="modulo-item">
+                      <span class="modulo">{{ it.modulo }}</span>
+                      <span class="cantidad"> x{{ it.cantidad }}</span>
+                    </li>
+                  } @empty {
+                    <li class="muted">Sin módulos</li>
+                  }
+                </ul>
+              </details>
+            </td>
+
+            <td>
+              @if (m.tipo === 'ingreso') {
+                <span class="badge ingreso">↑ Ingreso</span>
+              } @else {
+                <span class="badge egreso">↓ Egreso</span>
               }
             </td>
-            <td>{{ item.comentario }}</td>
+
+            <td>{{ m.comentario }}</td>
           </tr>
+        } @empty {
+          <tr><td colspan="4">No hay movimientos</td></tr>
         }
       </tbody>
     </table>
