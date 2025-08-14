@@ -1,0 +1,51 @@
+<div class="todo">
+    <!-- src/app/features/stock/modelos-list/modelos-list.component.html -->
+<div class="header">
+  <h2>Modelos</h2>
+  <a class="btn primary" routerLink="/modelos/nuevo">+ Nuevo modelo</a>
+</div>
+
+@if (loading()) {
+  <div class="hint">Cargando…</div>
+} @else if (!modelos().length) {
+  <div class="hint">No hay modelos aún. Creá el primero.</div>
+} @else {
+  <div class="tabla-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Modelo</th>
+          <th style="width:150px; text-align:right"># Módulos</th>
+          <th style="width:160px; text-align:right">Stock total</th>
+          <th>Detalle por módulo</th>
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of modelos(); track m.id) {
+          <tr>
+            <td>
+              <a [routerLink]="['/modelos', m.id]" class="link">
+                {{ m.nombre }}
+              </a>
+            </td>
+            <td style="text-align:right">{{ m.modulos?.length || 0 }}</td>
+            <td style="text-align:right">{{ totalStock(m) }}</td>
+            <td>
+              @for (s of modStock(m); track s.nombre) {
+                <span class="badge" [class.badge-low]="s.cantidad<=0">
+                  {{ s.nombre }}: {{ s.cantidad }}
+                </span>
+              }
+            </td>
+            <td class="actions">
+              <a class="btn tiny" [routerLink]="['/modelos', m.id]">Editar</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+</div>
