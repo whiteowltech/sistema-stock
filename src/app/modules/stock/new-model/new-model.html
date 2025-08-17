@@ -1,91 +1,44 @@
-<div class="new-model">
-  @if (!editMode()) {
-    <h2>Alta de modelo</h2>
-  } @else {
-    <h2>{{ form.get('nombre')?.value || 'Modelo' }}</h2>
-  }
-
-  @if (successMsg()) {
-    <div class="alert success">{{ successMsg() }}</div>
-  }
-  @if (errorMsg()) {
-    <div class="alert error">{{ errorMsg() }}</div>
-  }
-
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Nombre -->
-    <div class="field">
-      <label>Nombre del modelo</label>
-      <input type="text" formControlName="nombre" placeholder="Ej: iPhone 12">
-      @if (submitted() && form.get('nombre')?.invalid) {
-        <small class="error">El nombre es obligatorio (máx. 80 caracteres).</small>
-      }
-    </div>
-
-    <!-- Tipo de operación inicial (solo en alta) -->
-    @if (!editMode()) {
-      <div class="field radios">
-        <label>Tipo de operación inicial</label>
-        <div class="radio-group">
-          <label class="radio">
-            <input type="radio" formControlName="tipoOperacion" value="ingreso"> Ingreso
-          </label>
-          <label class="radio">
-            <input type="radio" formControlName="tipoOperacion" value="egreso"> Egreso
-          </label>
-        </div>
-      </div>
-    }
-
-    <!-- Comentario -->
-    <div class="field">
-      <label>Comentario (opcional)</label>
-      <textarea formControlName="comentario" rows="2" placeholder="Ej: Alta inicial, lote 123"></textarea>
-      @if (submitted() && form.get('comentario')?.errors?.['maxlength']) {
-        <small class="error">Máximo 300 caracteres.</small>
-      }
-    </div>
-
-    <!-- Módulos -->
-    <div class="modules-header">
-      <h3>Módulos</h3>
-      <button type="button" class="btn add" (click)="addModule()">+ Añadir módulo</button>
-    </div>
-
-    @if (submitted() && !modulesFA.length) {
-      <small class="error">Agregá al menos un módulo.</small>
-    }
-
-    <div class="modules-list">
-      @for (m of modulesFA.controls; track $index) {
-        <div class="module-row" [formGroup]="m">
-          <input class="col nombre" type="text" formControlName="nombre" placeholder="Nombre del módulo">
-          <input class="col cantidad" type="number" formControlName="cantidad" placeholder="Cantidad" min="1" step="1">
-          <button
-            type="button"
-            class="btn remove"
-            (click)="removeModule($index)"
-            [disabled]="modulesFA.length <= 1"
-            title="Eliminar módulo"
-          >✕</button>
-
-          <div class="row-errors">
-            @if (submitted() && m.get('nombre')?.invalid) {
-              <small class="error">El nombre del módulo es obligatorio.</small>
-            }
-            @if (submitted() && m.get('cantidad')?.invalid) {
-              <small class="error">La cantidad debe ser ≥ 1.</small>
-            }
-          </div>
-        </div>
-      }
-    </div>
-
-    <div class="actions">
-      <button type="submit" class="btn primary" [disabled]="saving()">
-        {{ editMode() ? 'Actualizar' : 'Guardar' }}
-      </button>
-      <!-- <button type="button" class="btn ghost" (click)="addModule()">Añadir módulo</button> -->
-    </div>
-  </form>
+<div class="header">
+  <h2>Modelos</h2>
+  <a class="btn primary" routerLink="/modelos/nuevo">+ Nuevo modelo</a>
 </div>
+
+@if (loading()) {
+  <div class="hint">Cargando…</div>
+} @else if (!modelos().length) {
+  <div class="hint">No hay modelos aún. Creá el primero.</div>
+} @else {
+  <div class="tabla-wrapper">
+    <table class="tabla-modulos">
+      <thead>
+        <tr>
+          <th>Modelo</th>
+          @for (c of cols; track c.label) {
+            <th style="text-align:right">{{ c.label }}</th>
+          }
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of modelos(); track m.id) {
+          <tr>
+            <td>
+              <a [routerLink]="['/modelos', m.id]" class="link">{{ m.nombre }}</a>
+            </td>
+
+           @for (c of cols; track c.label) {
+              <td style="text-align:right">
+                {{ qty(m, c.tipo, c.presentacionMl) }}
+              </td>
+            }
+
+
+            <td class="actions">
+              <a class="btn tiny" [routerLink]="['/modelos', m.id]">Editar</a>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

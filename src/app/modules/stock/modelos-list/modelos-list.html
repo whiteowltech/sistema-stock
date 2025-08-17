@@ -1,6 +1,5 @@
-<div class="todo">
-    <!-- src/app/features/stock/modelos-list/modelos-list.component.html -->
-<div class="header">
+<div class="modelos-list">
+  <div class="header">
   <h2>Modelos</h2>
   <a class="btn primary" routerLink="/modelos/nuevo">+ Nuevo modelo</a>
 </div>
@@ -11,13 +10,17 @@
   <div class="hint">No hay modelos aún. Creá el primero.</div>
 } @else {
   <div class="tabla-wrapper">
-    <table>
+    <table class="tabla-modulos">
       <thead>
         <tr>
           <th>Modelo</th>
-          <th style="width:150px; text-align:right"># Módulos</th>
-          <th style="width:160px; text-align:right">Stock total</th>
-          <th>Detalle por módulo</th>
+          <th style="text-align:right">Pegamento</th>
+          <th style="text-align:right">Plaqueta de carga</th>
+          <th style="text-align:right">Alcohol 1 L</th>
+          <th style="text-align:right">Alcohol 500 ml</th>
+          <th style="text-align:right">Alcohol 250 ml</th>
+          <th style="text-align:right">Tapa trasera</th>
+          <th style="text-align:right">Pantalla / display</th>
           <th style="width:80px"></th>
         </tr>
       </thead>
@@ -29,15 +32,38 @@
                 {{ m.nombre }}
               </a>
             </td>
-            <td style="text-align:right">{{ m.modulos?.length || 0 }}</td>
-            <td style="text-align:right">{{ totalStock(m) }}</td>
-            <td>
-              @for (s of modStock(m); track s.nombre) {
-                <span class="badge" [class.badge-low]="s.cantidad<=0">
-                  {{ s.nombre }}: {{ s.cantidad }}
-                </span>
-              }
+
+            <!-- Pegamento -->
+            <td style="text-align:right">
+              {{ qty(m, 'pegamento') }}
             </td>
+
+            <!-- Plaqueta de carga -->
+            <td style="text-align:right">
+              {{ qty(m, 'plaqueta_carga') }}
+            </td>
+
+            <!-- Alcohol por presentaciones -->
+            <td style="text-align:right">
+              {{ qty(m, 'alcohol_isopropilico', 1000) }}
+            </td>
+            <td style="text-align:right">
+              {{ qty(m, 'alcohol_isopropilico', 500) }}
+            </td>
+            <td style="text-align:right">
+              {{ qty(m, 'alcohol_isopropilico', 250) }}
+            </td>
+
+            <!-- Tapa trasera -->
+            <td style="text-align:right">
+              {{ qty(m, 'tapa_trasera') }}
+            </td>
+
+            <!-- Pantalla / display -->
+            <td style="text-align:right">
+              {{ qty(m, 'pantalla') }}
+            </td>
+
             <td class="actions">
               <a class="btn tiny" [routerLink]="['/modelos', m.id]">Editar</a>
             </td>

@@ -1,48 +1,49 @@
-// interfaces/stock.ts
+// Tipos de módulo soportados
+export type TipoModulo =
+  | 'pantalla'          // Pantallas / display
+  | 'pegamento'
+  | 'plaqueta_carga'
+  | 'alcohol_isopropilico'
+  | 'tapa_trasera';
+
+// Presentación para alcohol (en mililitros)
+export type PresentacionMl = 250 | 500 | 1000;
+
 export interface Modulo {
   id: number;
-  nombre: string;
+  // nombre: string;          // Ej: "Pantalla", "Pegamento", "Alcohol isopropílico"
+  tipo: TipoModulo;        // 👈 categoría
+  // Para alcohol, si querés manejar stock por presentación:
+  presentacionMl?: PresentacionMl; // solo si tipo === 'alcohol_isopropilico'
 }
 
 export interface Modelo {
   id: number;
   nombre: string;
   modulos: Modulo[];
+  comentario?: string;
 }
 
-export type TipoMovimiento = 'ingreso' | 'egreso';
-
-export interface MovimientoItem {
-  moduloId: number;
-  cantidad: number;
-}
+export type TipoMovimiento = 'ingreso' | 'egreso';  // 👈 NUEVO
 
 export interface Movimiento {
   id: number;
-  fecha: string;                  // 'YYYY-MM-DD'
-  modeloId: number;               // referencia al modelo
-  items: MovimientoItem[];        // uno o varios módulos afectados
-  tipo: TipoMovimiento;           // ingreso | egreso
-  comentario: string;
+  fecha: string; // ISO
+  modeloId: number;
+  tipo: TipoMovimiento;            // 👈 usa el alias
+  comentario?: string;
+  items: {
+    moduloId: number;
+    cantidad: number;
+    presentacionMl?: PresentacionMl;
+  }[];
 }
 
-/** Para la vista (resuelve nombres) */
 export interface MovimientoView {
   id: number;
   fecha: string;
   modelo: string;
-  tipo: TipoMovimiento;
-  comentario: string;
-  items: { modulo: string; cantidad: number }[];
-}
-export interface StockModule {
-  id: number;
-  nombre: string;
-  stock: number; // stock actual de ese módulo
-}
-
-export interface StockItem {
-  id: number;
-  modelo: string;
-  modulos: StockModule[];
+  tipo: TipoMovimiento;            // 👈 usa el alias
+  comentario?: string;
+  items: { modulo: string; cantidad: number; presentacion?: string }[];
 }

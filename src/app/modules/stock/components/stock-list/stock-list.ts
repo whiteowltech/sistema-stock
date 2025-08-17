@@ -8,7 +8,7 @@ type SortKey = 'fecha' | 'modelo' | 'comentario' | 'tipo' | 'cantidad';
   selector: 'app-stock-list',
   templateUrl: './stock-list.html',
   styleUrls: ['./stock-list.scss'],
-  imports: [ DatePipe, NgClass ],
+  imports: [ DatePipe ],
 })
 export class StockListComponent implements OnChanges {
   @Input() movimientos: MovimientoView[] = [];
