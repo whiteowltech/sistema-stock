@@ -1,44 +1,100 @@
-<div class="header">
-  <h2>Modelos</h2>
-  <a class="btn primary" routerLink="/modelos/nuevo">+ Nuevo modelo</a>
-</div>
+<div class="new-model">
+  @if (!editMode()) {
+    <h2>Alta de modelo</h2>
+  } @else {
+    <h2>{{ form.get('nombre')?.value || 'Modelo' }}</h2>
+  }
 
-@if (loading()) {
-  <div class="hint">Cargando…</div>
-} @else if (!modelos().length) {
-  <div class="hint">No hay modelos aún. Creá el primero.</div>
-} @else {
-  <div class="tabla-wrapper">
-    <table class="tabla-modulos">
-      <thead>
-        <tr>
-          <th>Modelo</th>
-          @for (c of cols; track c.label) {
-            <th style="text-align:right">{{ c.label }}</th>
+  @if (successMsg()) { <div class="alert success">{{ successMsg() }}</div> }
+  @if (errorMsg())   { <div class="alert error">{{ errorMsg() }}</div> }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Nombre -->
+    <div class="field">
+      <label>Nombre del modelo</label>
+      <input type="text" formControlName="nombre" placeholder="Ej: iPhone 12">
+      @if (submitted() && form.get('nombre')?.invalid) {
+        <small class="error">El nombre es obligatorio (máx. 80 caracteres).</small>
+      }
+    </div>
+
+    <!-- Tipo de operación inicial (solo en alta) -->
+    @if (!editMode()) {
+      <div class="field radios">
+        <label>Tipo de operación inicial</label>
+        <div class="radio-group">
+          <label class="radio">
+            <input type="radio" formControlName="tipoOperacion" value="ingreso"> Ingreso
+          </label>
+          <label class="radio">
+            <input type="radio" formControlName="tipoOperacion" value="egreso"> Egreso
+          </label>
+        </div>
+      </div>
+    }
+
+    <!-- Comentario -->
+    <div class="field">
+      <label>Comentario (opcional)</label>
+      <textarea formControlName="comentario" rows="2" placeholder="Ej: Alta inicial, lote 123"></textarea>
+      @if (submitted() && form.get('comentario')?.errors?.['maxlength']) {
+        <small class="error">Máximo 300 caracteres.</small>
+      }
+    </div>
+
+    <!-- Módulos: filas fijas SIEMPRE -->
+    <div class="modules-header">
+      <h3>Módulos</h3>
+      <!-- Sin botón "Añadir módulo" -->
+    </div>
+
+    <div class="modules-list readonly">
+      @for (m of modulesFA.controls; track $index) {
+        <div class="module-row" [formGroup]="m">
+          <!-- Tipo (bloqueado) -->
+          <select class="col tipo" formControlName="tipo" [disabled]="true">
+            <option [ngValue]="null" disabled>Tipo…</option>
+            <option value="pantalla">Pantalla / display</option>
+            <option value="pegamento">Pegamento</option>
+            <option value="plaqueta_carga">Plaqueta de carga</option>
+            <option value="alcohol_isopropilico">Alcohol isopropílico</option>
+            <option value="tapa_trasera">Tapa trasera</option>
+          </select>
+
+          <!-- Presentación (solo alcohol, bloqueado) -->
+          @if (m.get('tipo')?.value === 'alcohol_isopropilico') {
+          <select class="col presentacion" formControlName="presentacionMl" [disabled]="true">
+              <option [ngValue]="null" disabled>Presentación…</option>
+              <option [ngValue]="1000">1 litro</option>
+              <option [ngValue]="500">500 ml</option>
+              <option [ngValue]="250">250 ml</option>
+            </select>
           }
-          <th style="width:80px"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (m of modelos(); track m.id) {
-          <tr>
-            <td>
-              <a [routerLink]="['/modelos', m.id]" class="link">{{ m.nombre }}</a>
-            </td>
 
-           @for (c of cols; track c.label) {
-              <td style="text-align:right">
-                {{ qty(m, c.tipo, c.presentacionMl) }}
-              </td>
+          <!-- Cantidad (>= 0 en todos los casos) -->
+          <input
+            class="col cantidad"
+            type="number"
+            formControlName="cantidad"
+            placeholder="Cantidad"
+            [attr.min]="0"
+            step="1"
+          >
+
+          <!-- Sin botón eliminar -->
+          <div class="row-errors">
+            @if (submitted() && m.get('cantidad')?.invalid) {
+              <small class="error">La cantidad debe ser ≥ 0.</small>
             }
+          </div>
+        </div>
+      }
+    </div>
 
-
-            <td class="actions">
-              <a class="btn tiny" [routerLink]="['/modelos', m.id]">Editar</a>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-}
+    <div class="actions">
+      <button type="submit" class="btn primary" [disabled]="saving()">
+        {{ editMode() ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </form>
+</div>
