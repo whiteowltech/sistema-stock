@@ -1,13 +1,21 @@
 {
   "name": "stock-app",
   "version": "0.0.0",
+  "description": "Sistema de Stock para escritorio",        
+  "author": "White Owl Tech",                               
+  "main": "electron/main.js",
+  "private": true,
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:web": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:stock-app": "node dist/stock-app/server/server.mjs"
+    "serve:ssr:stock-app": "node dist/stock-app/server/server.mjs",
+    "build:electron": "ng build --base-href ./",
+    "electron": "ng build --base-href ./ &&  electron .",
+    "dist": "ng build --base-href ./ && electron-builder"
   },
   "prettier": {
     "overrides": [
@@ -19,7 +27,6 @@
       }
     ]
   },
-  "private": true,
   "dependencies": {
     "@angular/common": "^20.1.0",
     "@angular/compiler": "^20.1.0",
@@ -51,5 +58,21 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.8.2",
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "com.whiteowltech.stockapp",
+    "productName": "StockApp",
+    "files": [
+      "dist/stock-app/browser/**/*",
+      "electron/**/*","package.json"    
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "asar": true,
+    "win": {
+      "icon": "electron/icon.ico",
+      "target": "nsis"
+    }
   }
 }

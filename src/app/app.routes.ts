@@ -1,13 +1,16 @@
 import { Routes } from '@angular/router';
-// import { StockListComponent } from './modules/stock/components/stock-list/stock-list';
+
 import { StockHomeComponent } from './modules/stock/pages/stock-home/stock-home';
 import { NewModelComponent } from './modules/stock/new-model/new-model';
 import { ModelosList } from './modules/stock/modelos-list/modelos-list';
+// import { MovimientosListComponent } from './modules/stock/movimientos/movimientos-list.component'; // si lo tenés
 
 export const routes: Routes = [
-  { path: 'stock', component: StockHomeComponent },
-  { path: 'modelos', component: ModelosList },
-  { path: 'modelos/nuevo', component: NewModelComponent },
-  { path: 'modelos/:id', component: NewModelComponent },   // 👈 modo edición
+  { path: 'movimientos', component: StockHomeComponent, title: 'Inicio' },
+
+  { path: 'modelos', component: ModelosList, title: 'Modelos' },
+  { path: 'modelos/nuevo', component: NewModelComponent, title: 'Nuevo modelo' },
+  { path: 'modelos/:id', component: NewModelComponent, title: 'Editar modelo' },
   { path: '', redirectTo: 'modelos', pathMatch: 'full' },
+  { path: '**', redirectTo: 'modelos' }, // 404 -> lista de modelos
 ];

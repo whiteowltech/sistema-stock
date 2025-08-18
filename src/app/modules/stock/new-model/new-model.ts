@@ -13,7 +13,7 @@ type ModDef = { tipo: TipoModulo; presentacionMl?: PresentacionMl };
 @Component({
   selector: 'app-new-model',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './new-model.html',
   styleUrls: ['./new-model.scss'],
 })
