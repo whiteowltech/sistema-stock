@@ -1,0 +1,67 @@
+<!-- src/app/features/insumos/new-insumos/new-insumos.html -->
+<div class="new-insumo">
+  <h2>Registrar insumo</h2>
+
+  @if (successMsg()) { <div class="alert success fade-in-out">{{ successMsg() }}</div> }
+  @if (errorMsg())   { <div class="alert error fade-in-out">{{ errorMsg() }}</div> }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <!-- Toggle Ingreso / Egreso -->
+    <div class="tipo-movimiento">
+      <button
+        type="button"
+        class="ingreso"
+        [class.active]="form.get('tipo')?.value === 'ingreso'"
+        (click)="form.get('tipo')?.setValue('ingreso')">
+        Ingreso
+      </button>
+
+      <button
+        type="button"
+        class="egreso"
+        [class.active]="form.get('tipo')?.value === 'egreso'"
+        (click)="form.get('tipo')?.setValue('egreso')">
+        Egreso
+      </button>
+    </div>
+
+    @if (submitted() && form.get('tipo')?.invalid) {
+      <small class="error" style="text-align:center">Elegí el tipo de movimiento.</small>
+    }
+
+    <!-- Insumo -->
+    <div class="field">
+      <label>Insumo</label>
+      <select formControlName="insumoId">
+        <option [ngValue]="null" disabled>-- Elegir insumo --</option>
+        @for (i of insumos; track i.id) {
+          <option [ngValue]="i.id">{{ label[i.tipo] }}</option>
+        }
+      </select>
+      @if (submitted() && form.get('insumoId')?.invalid) {
+        <small class="error">Seleccioná un insumo.</small>
+      }
+    </div>
+
+    <!-- Cantidad -->
+    <div class="field">
+      <label>Cantidad</label>
+      <input type="number" formControlName="cantidad" min="1" step="1">
+      @if (submitted() && form.get('cantidad')?.invalid) {
+        <small class="error">La cantidad debe ser ≥ 1.</small>
+      }
+    </div>
+
+    <!-- Comentario -->
+    <div class="field">
+      <label>Comentario (opcional)</label>
+      <input type="text" formControlName="comentario" maxlength="300" placeholder="Ej: Compra proveedor, ajuste, etc.">
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" type="submit" [disabled]="submitted() && form.invalid">
+        Guardar
+      </button>
+    </div>
+  </form>
+</div>

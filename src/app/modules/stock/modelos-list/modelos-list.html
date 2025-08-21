@@ -15,40 +15,32 @@
   @if (loading()) {
     <div class="hint">Cargando…</div>
   } @else if (!filtered().length) {
-    <div class="hint">No hay modelos que coincidan con la búsqueda.</div>
+    <div class="hint">No hay modelos que coincidan.</div>
   } @else {
     <div class="tabla-wrapper">
       <table class="tabla-modulos">
         <thead>
           <tr>
             <th>Modelo</th>
-            <th style="text-align:right">Pegamento</th>
+            <th style="text-align:right">Módulo con borde</th>
+            <th style="text-align:right">Módulo sin borde</th>
             <th style="text-align:right">Plaqueta de carga</th>
-            <th style="text-align:right">Alcohol 1 L</th>
-            <th style="text-align:right">Alcohol 500 ml</th>
-            <th style="text-align:right">Alcohol 250 ml</th>
             <th style="text-align:right">Tapa trasera</th>
-            <th style="text-align:right">Pantalla / display</th>
             <th style="width:80px"></th>
           </tr>
         </thead>
-
         <tbody>
           @for (m of filtered(); track m.id) {
             <tr>
               <td>
-                <a [routerLink]="['/modelos', m.id]" class="link">
-                  {{ m.nombre }}
-                </a>
+                <a [routerLink]="['/modelos', m.id]" class="link">{{ m.nombre }}</a>
               </td>
 
-              <td style="text-align:right">{{ qty(m, 'pegamento') }}</td>
-              <td style="text-align:right">{{ qty(m, 'plaqueta_carga') }}</td>
-              <td style="text-align:right">{{ qty(m, 'alcohol_isopropilico', 1000) }}</td>
-              <td style="text-align:right">{{ qty(m, 'alcohol_isopropilico', 500) }}</td>
-              <td style="text-align:right">{{ qty(m, 'alcohol_isopropilico', 250) }}</td>
-              <td style="text-align:right">{{ qty(m, 'tapa_trasera') }}</td>
-              <td style="text-align:right">{{ qty(m, 'pantalla') }}</td>
+              <!-- cantidades por categoría -->
+              <td style="text-align:right">{{ qtyModulo(m, 'con_borde') }}</td>
+              <td style="text-align:right">{{ qtyModulo(m, 'sin_borde') }}</td>
+              <td style="text-align:right">{{ qtyPlaqueta(m) }}</td>
+              <td style="text-align:right">{{ qtyTapa(m) }}</td>
 
               <td class="actions">
                 <a class="btn tiny" [routerLink]="['/modelos', m.id]">Editar</a>
@@ -59,4 +51,40 @@
       </table>
     </div>
   }
+
+
+
+  <!-- INSUMOS GLOBALES -->
+  <div class="header" style="margin-top: 28px;">
+    <h2>Insumos</h2>
+    <div class="actions-right">
+      <a class="btn" routerLink="/insumos">Gestionar</a>
+    </div>
+  </div>
+
+  @if (insLoading()) {
+    <div class="hint">Cargando insumos…</div>
+  } @else if (!insumos().length) {
+    <div class="hint">Aún no hay insumos definidos.</div>
+  } @else {
+    <div class="tabla-wrapper">
+      <table class="tabla-modulos">
+        <thead>
+          <tr>
+            <th>Insumo</th>
+            <th style="text-align:right">Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ins of insumos(); track ins.tipo) {
+            <tr>
+              <td>{{ ins.etiqueta }}</td>
+              <td style="text-align:right">{{ ins.cantidad }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
 </div>

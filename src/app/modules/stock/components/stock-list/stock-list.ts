@@ -1,30 +1,25 @@
 import { Component, Input, OnChanges } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { MovimientoView, TipoMovimiento } from '../../../../interfaces/stock';
-import { DatePipe, NgClass } from '@angular/common';
 
 type SortKey = 'fecha' | 'modelo' | 'comentario' | 'tipo' | 'cantidad';
 
 @Component({
   selector: 'app-stock-list',
+  standalone: true,
   templateUrl: './stock-list.html',
   styleUrls: ['./stock-list.scss'],
-  imports: [ DatePipe ],
+  imports: [DatePipe],
 })
 export class StockListComponent implements OnChanges {
+  // 👉 Entradas
   @Input() movimientos: MovimientoView[] = [];
-  // ⬇️ Agrego la lista de módulos/stock (opcional)
-  @Input() stockItems: Array<{
-    modelo?: string; nombre?: string; id?: string;
-    stock?: number; cantidad?: number; total?: number;
-    minimo?: number; minStock?: number; stock_min?: number;
-  }> = [];
 
+  // 👉 util en template (paginador)
   Math = Math;
 
-  // Filtros existentes
+  // 👉 filtros / orden / paginación
   filtro: 'todos' | TipoMovimiento = 'todos';
-
-  // Nuevo: búsqueda + orden + paginación
   searchTerm = '';
   sortKey: SortKey = 'fecha';
   sortDir: 'asc' | 'desc' = 'desc';
@@ -33,12 +28,15 @@ export class StockListComponent implements OnChanges {
   pageSize = 10;
   total = 0;
 
-  // Data derivada
+  // 👉 data derivada
   private working: MovimientoView[] = [];
   visible: MovimientoView[] = [];
 
-  ngOnChanges() { this.rebuild(); }
+  ngOnChanges() {
+    this.rebuild();
+  }
 
+  // ======== UI handlers ========
   setFiltro(f: 'todos' | TipoMovimiento) {
     this.filtro = f;
     this.page = 1;
@@ -46,7 +44,7 @@ export class StockListComponent implements OnChanges {
   }
 
   onSearch(term: string) {
-    this.searchTerm = term.trim().toLowerCase();
+    this.searchTerm = (term ?? '').trim().toLowerCase();
     this.page = 1;
     this.rebuild();
   }
@@ -66,15 +64,17 @@ export class StockListComponent implements OnChanges {
     this.slicePage();
   }
 
+  // ======== pipeline ========
   private rebuild() {
-    // 1) filtrar por tipo
-    let data = (this.filtro === 'todos')
-      ? [...this.movimientos]
-      : this.movimientos.filter(m => m.tipo === this.filtro);
+    // 1) filtro tipo
+    let data =
+      this.filtro === 'todos'
+        ? [...(this.movimientos ?? [])]
+        : (this.movimientos ?? []).filter((m) => m.tipo === this.filtro);
 
-    // 2) búsqueda (modelo, comentario, tipo)
+    // 2) búsqueda
     if (this.searchTerm) {
-      data = data.filter(m => {
+      data = data.filter((m) => {
         const modelo = (m.modelo ?? '').toString().toLowerCase();
         const comentario = (m.comentario ?? '').toString().toLowerCase();
         const tipo = (m.tipo ?? '').toString().toLowerCase();
@@ -89,6 +89,7 @@ export class StockListComponent implements OnChanges {
     // 3) ordenar
     data.sort((a, b) => this.compare(a, b, this.sortKey, this.sortDir));
 
+    // 4) paginar
     this.working = data;
     this.total = data.length;
     this.page = Math.max(1, Math.min(this.page, this.maxPage()));
@@ -104,113 +105,108 @@ export class StockListComponent implements OnChanges {
     return Math.max(1, Math.ceil(this.total / this.pageSize));
   }
 
-  private compare(a: any, b: any, key: SortKey, dir: 'asc'|'desc') {
-    let va = a[key];
-    let vb = b[key];
+  private compare(a: any, b: any, key: SortKey, dir: 'asc' | 'desc') {
+    let va = a?.[key];
+    let vb = b?.[key];
 
-    // normalizar fechas
     if (key === 'fecha') {
-      va = new Date(va).getTime();
-      vb = new Date(vb).getTime();
+      va = va ? new Date(va).getTime() : 0;
+      vb = vb ? new Date(vb).getTime() : 0;
     }
 
-    // normalizar strings
     if (typeof va === 'string') va = va.toLowerCase();
     if (typeof vb === 'string') vb = vb.toLowerCase();
 
-    const res = (va > vb) ? 1 : (va < vb ? -1 : 0);
+    const res = va > vb ? 1 : va < vb ? -1 : 0;
     return dir === 'asc' ? res : -res;
-  }
+    }
 
-  // Dentro de tu componente (una sola vez)
+  // ======== trackBy ========
   trackByMovimiento(_i: number, m: MovimientoView) {
     return m.id ?? `${m.modelo}-${m.fecha}-${m.tipo}-${this.itemsSignature(m)}`;
   }
 
+  trackByItem(_i: number, it: { concepto: string; cantidad: number }) {
+    return `${it.concepto}-${it.cantidad}`;
+  }
+
   private itemsSignature(m: MovimientoView): string {
     return (m.items ?? [])
-      .map(i => `${i.modulo}:${i.cantidad}`)
+      .map((i: any) => `${i.concepto}:${i.cantidad}`)
       .join('|');
   }
 
-  trackByItem(_i: number, it: { modulo: string; cantidad: number }) {
-    return `${it.modulo}-${it.cantidad}`;
-  }
-
-  // ====== EXPORTS ======
-
-  // 1) Helper universal para CSV
+  // ======== EXPORTS ========
+  // CSV helper
   private toCSV(headers: string[], rows: string[][]): string {
     const head = headers.join(',');
-    const body = rows.map(r =>
-      r.map(v => `"${(v ?? '').toString().replaceAll('"','""')}"`).join(',')
+    const body = rows.map((r) =>
+      r.map((v) => `"${(v ?? '').toString().replaceAll('"', '""')}"`).join(',')
     );
     return [head, ...body].join('\r\n');
   }
 
-  // 2) Descargar archivo
+  // descarga
   private downloadCSV(name: string, csv: string) {
-    const blob = new Blob([new Uint8Array([0xEF,0xBB,0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), csv], {
+      type: 'text/csv;charset=utf-8;',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
     a.href = url;
     a.download = `${name}_${stamp}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
 
-  // 3) Formateador de fecha (evita depender del DatePipe en export)
+  // formateo fecha rápido (para export)
   private fmtAR = new Intl.DateTimeFormat('es-AR', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit'
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 
-  // helper: obtenés TODO (sin paginar/filtrar)
-  private getAllMovimientos(): MovimientoView[] {
-    return this.movimientos ?? [];
+  // detalle ítems en una celda
+  private detalleLinea(m: MovimientoView): string {
+    const arr = m?.items ?? [];
+    if (!Array.isArray(arr) || !arr.length) return '';
+    return arr.map((d) => `${d.concepto}:${d.cantidad}`).join('; ');
   }
 
-  // Export original (sólo movimientos) — lo dejo por si lo seguís usando
-  exportCSV() {
-    const rows = this.getAllMovimientos();
+  // Exporta TODO lo filtrado (ignora paginación)
+  exportFiltradoCSV() {
+    const rows = this.working; // ya filtrado/ordenado
     if (!rows?.length) return;
 
-    const headers = ['Fecha','Modelo','Tipo','Comentario'];
-    const csvRows = rows.map(r => ([
+    const headers = ['Fecha', 'Modelo', 'Tipo', 'Comentario', 'Detalle'];
+    const csvRows = rows.map((r) => [
       r.fecha ? this.fmtAR.format(new Date(r.fecha)) : '',
-      (r.modelo ?? ''),
-      (r.tipo ?? ''),
-      (r.comentario ?? '')
-    ]));
+      r.modelo ?? '',
+      r.tipo ?? '',
+      r.comentario ?? '',
+      this.detalleLinea(r),
+    ]);
 
-    const csv = this.toCSV(headers, csvRows);
-    this.downloadCSV('movimientos', csv);
+    this.downloadCSV('movimientos_filtrado', this.toCSV(headers, csvRows));
   }
 
-  // 🔹 NUEVO: Exportar TODO JUNTO (un único CSV con dos secciones)
-  exportTodoEnUnCSV() {
-    // --- Sección 1: Movimientos (con detalle de módulos si existe) ---
-    const movs = this.getAllMovimientos();
-    const movHeaders = ['Fecha','Modelo','Tipo','Comentario','Detalle'];
-    const toDetalle = (m: any) => {
-      const arr = m?.items ?? m?.modulos ?? m?.detalle ?? m?.itemsDetalle ?? [];
-      if (!Array.isArray(arr) || !arr.length) return '';
-      return arr.map((d: any) => {
-        const nombre = d?.modulo ?? d?.modelo ?? d?.nombre ?? '';
-        const cant = d?.cantidad ?? d?.qty ?? d?.cantidad_total ?? '';
-        return `${nombre}:${cant}`;
-      }).join('; ');
-    };
-    const movRows = movs.map(m => ([
-      m.fecha ? this.fmtAR.format(new Date(m.fecha)) : '',
-      m.modelo ?? '',
-      m.tipo ?? '',
-      m.comentario ?? '',
-      toDetalle(m)
-    ]));
-    const movCSV = this.toCSV(movHeaders, movRows);
+  // Exporta SOLO la página visible
+  exportPaginaCSV() {
+    const rows = this.visible;
+    if (!rows?.length) return;
 
-    this.downloadCSV('export_todo', movCSV);
+    const headers = ['Fecha', 'Modelo', 'Tipo', 'Comentario', 'Detalle'];
+    const csvRows = rows.map((r) => [
+      r.fecha ? this.fmtAR.format(new Date(r.fecha)) : '',
+      r.modelo ?? '',
+      r.tipo ?? '',
+      r.comentario ?? '',
+      this.detalleLinea(r),
+    ]);
+
+    this.downloadCSV('movimientos_pagina', this.toCSV(headers, csvRows));
   }
 }

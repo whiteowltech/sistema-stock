@@ -1,0 +1,162 @@
+/* src/app/features/insumos/new-insumos/new-insumos.scss */
+
+.new-insumo {
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+
+  h2 {
+    margin-bottom: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+    text-align: center;
+    color: #333;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  /* selector ingreso / egreso */
+  .tipo-movimiento {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+
+    button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: #f9f9f9;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #eee;
+      }
+
+      &.active.ingreso {
+        background: #28a745;
+        color: #fff;
+        border-color: #28a745;
+      }
+
+      &.active.egreso {
+        background: #dc3545;
+        color: #fff;
+        border-color: #dc3545;
+      }
+    }
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    label {
+      font-size: 0.9rem;
+      color: #555;
+      font-weight: 500;
+    }
+
+    input,
+    select {
+      padding: 0.6rem 0.8rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+
+      &:focus {
+        border-color: #007bff;
+        outline: none;
+      }
+    }
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+
+    .btn {
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 500;
+      transition: background 0.2s;
+
+      &.primary {
+        background: #007bff;
+        color: #fff;
+
+        &:hover {
+          background: #0056b3;
+        }
+
+        &:disabled {
+          background: #999;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+}
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+
+  span.material-icons {
+    font-size: 20px;
+  }
+
+  &.success {
+    background-color: #e6f4ea;
+    color: #1e7d32;
+    border: 1px solid #b3e0c5;
+
+    span.material-icons {
+      color: #1e7d32;
+    }
+  }
+
+  &.error {
+    background-color: #fdecea;
+    color: #d32f2f;
+    border: 1px solid #f5c6c6;
+
+    span.material-icons {
+      color: #d32f2f;
+    }
+  }
+}
+.fade-in-out {
+  animation: fadeIn 0.3s ease, fadeOut 0.8s ease 3s forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-5px); }
+}
+

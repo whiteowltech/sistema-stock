@@ -1,14 +1,16 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink  } from '@angular/router';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule
+} from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { StockService } from '../../../core/services/stock';
-import { Modelo, TipoModulo, PresentacionMl } from '../../../interfaces/stock';
-
-type ModDef = { tipo: TipoModulo; presentacionMl?: PresentacionMl };
-
-// catálogo fijo de filas a mostrar SIEMPRE
-
+import { Modelo, TipoModulo } from '../../../interfaces/stock';
 
 @Component({
   selector: 'app-new-model',
@@ -24,20 +26,8 @@ export class NewModelComponent implements OnInit {
   private router = inject(Router);
   private stock = inject(StockService);
 
-  cols = [
-    { tipo: 'pegamento' as const,             label: 'Pegamento' },
-    { tipo: 'plaqueta_carga' as const,        label: 'Plaqueta de carga' },
-    { tipo: 'alcohol_isopropilico' as const,  presentacionMl: 1000 as const, label: 'Alcohol 1 L' },
-    { tipo: 'alcohol_isopropilico' as const,  presentacionMl: 500  as const, label: 'Alcohol 500 ml' },
-    { tipo: 'alcohol_isopropilico' as const,  presentacionMl: 250  as const, label: 'Alcohol 250 ml' },
-    { tipo: 'tapa_trasera' as const,          label: 'Tapa trasera' },
-    { tipo: 'pantalla' as const,              label: 'Pantalla / display' },
-  ];
-  // estado
-  loading = signal(true);
-  modelos = signal<Modelo[]>([]);
-
   // Estado UI
+  loading = signal(true);
   saving = signal(false);
   submitted = signal(false);
   successMsg = signal<string | null>(null);
@@ -47,131 +37,190 @@ export class NewModelComponent implements OnInit {
   editMode = signal(false);
   modelId = signal<number | null>(null);
 
+  // Variantes fijas para cualquier modelo
+  private readonly FIXED_TYPES: Array<TipoModulo> = ['con_borde', 'sin_borde'];
+
   // Formulario
   form: FormGroup = this.fb.group({
     nombre: ['', [Validators.required, Validators.maxLength(80)]],
-    tipoOperacion: ['ingreso', [Validators.required]], // solo se usa en alta
+    tipoOperacion: ['ingreso', [Validators.required]], // solo en alta (si quisieras registrar un movimiento inicial)
     comentario: ['', [Validators.maxLength(300)]],
-    modules: this.fb.array<FormGroup>([])
+
+    // 3 bloques fijos
+    modules: this.fb.array<FormGroup>([]),   // 2 filas: con_borde / sin_borde
+    plaquetas: this.fb.array<FormGroup>([]), // 1 fila
+    tapas: this.fb.array<FormGroup>([]),     // 1 fila
   });
 
-  get modulesFA(): FormArray<FormGroup> {
-    return this.form.get('modules') as FormArray<FormGroup>;
-  }
+  // Getters de FormArray
+  get modulesFA(): FormArray<FormGroup>   { return this.form.get('modules') as FormArray<FormGroup>; }
+  get plaquetasFA(): FormArray<FormGroup> { return this.form.get('plaquetas') as FormArray<FormGroup>; }
+  get tapasFA(): FormArray<FormGroup>     { return this.form.get('tapas') as FormArray<FormGroup>; }
 
   // =======================
   // Ciclo de vida
   // =======================
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
+
     if (idParam) {
       const id = +idParam;
       this.editMode.set(true);
       this.modelId.set(id);
-      this.loadAndEnsureAll(id);      // 👈 en edición: 7 filas con stock/0
+      this.loadAndEnsureBlocks(id);   // edición: crea 2+1+1 filas con cantidad (0 si no hay)
     } else {
-      this.ensureAllRowsWithZeros();  // 👈 en alta: 7 filas en 0
+      this.editMode.set(false);
+      this.ensureAllBlocksWithZeros(); // alta: crea 2+1+1 filas en 0
     }
-    this.modelos.set(this.stock.getModelos());
+
     this.loading.set(false);
   }
 
   // =======================
   // Helpers de filas
   // =======================
-  /** Crea una fila del FormArray de módulos (tipo/presentación bloqueados) */
+
+  /** Crea fila para módulos (con_borde/sin_borde) */
   private createModuleRow(
     tipo: TipoModulo,
-    presentacion: PresentacionMl | null,
     cantidad: number,
     id?: number | null,
   ): FormGroup {
-    const group = this.fb.group({
+    const g = this.fb.group({
       id: new FormControl<number | null>(id ?? null),
       tipo: new FormControl<TipoModulo>(tipo, { nonNullable: true, validators: [Validators.required] }),
-      presentacionMl: new FormControl<PresentacionMl | null>(presentacion),
-      cantidad: new FormControl<number>(cantidad, { nonNullable: true, validators: [Validators.required, Validators.min(0)] })
+      cantidad: new FormControl<number>(
+        cantidad,
+        { nonNullable: true, validators: [Validators.required, Validators.min(this.editMode() ? 0 : 1)] }
+      ),
     });
-
-    // ⚠️ Bloqueamos tipo/presentación siempre (alta y edición).
-    group.get('tipo')?.disable({ emitEvent: false });
-    group.get('presentacionMl')?.disable({ emitEvent: false });
-
-    return group;
+    // tipo no es editable (siempre fijo en este flujo)
+    g.get('tipo')?.disable({ emitEvent: false });
+    return g;
   }
 
-  /** Alta: llenar SIEMPRE todas las filas, cantidad = 0 */
-  private ensureAllRowsWithZeros() {
+  /** Crea fila para plaquetas/tapas (solo cantidad + id) */
+  private createSimpleRow(
+    cantidad: number,
+    id?: number | null
+  ): FormGroup {
+    return this.fb.group({
+      id: new FormControl<number | null>(id ?? null),
+      cantidad: new FormControl<number>(
+        cantidad,
+        { nonNullable: true, validators: [Validators.required, Validators.min(this.editMode() ? 0 : 1)] }
+      ),
+    });
+  }
+
+  /** Alta: llenar SIEMPRE los 3 bloques en 0 (2+1+1 filas) */
+  private ensureAllBlocksWithZeros(): void {
     this.modulesFA.clear();
-    for (const def of this.cols) {
-      this.modulesFA.push(this.createModuleRow(def.tipo, def.presentacionMl ?? null, 0, null));
+    this.plaquetasFA.clear();
+    this.tapasFA.clear();
+
+    // 2 módulos fijos
+    for (const t of this.FIXED_TYPES) {
+      this.modulesFA.push(this.createModuleRow(t, 0, null));
     }
+    // 1 fila de plaquetas
+    this.plaquetasFA.push(this.createSimpleRow(0, null));
+    // 1 fila de tapas
+    this.tapasFA.push(this.createSimpleRow(0, null));
   }
 
-  /** Edición: crear las 7 filas; si falta alguna, va en 0 */
-  private loadAndEnsureAll(id: number) {
+  /** Edición: carga el modelo y asegura 2+1+1 filas, usando 0 si faltan */
+  private loadAndEnsureBlocks(id: number): void {
     this.saving.set(true);
 
-    const editable = this.stock.getModeloForEdit(id); // { id, nombre, modulos: [{ id, tipo, presentacionMl?, cantidad }] }
-    if (!editable) {
-      this.errorMsg.set('No se pudo cargar el modelo');
+    const modelo = this.stock.getModelo(id);
+    if (!modelo) {
+      this.errorMsg.set('No se encontró el modelo');
       this.saving.set(false);
       return;
     }
 
+    // nombre/comentario
     this.form.patchValue({
-      nombre: editable.nombre,
-      comentario: (editable as any).comentario ?? ''
+      nombre: modelo.nombre,
+      comentario: (modelo as any).comentario ?? ''
     });
 
-    // Indexar por tipo/presentación para leer cantidad rápida
-    const qtyByKey = new Map<string, number>();
-    const idByKey = new Map<string, number>();
-    for (const mm of editable.modulos) {
-      const key = `${mm.tipo}|${mm.presentacionMl ?? 0}`;
-      qtyByKey.set(key, typeof mm.cantidad === 'number' ? mm.cantidad : 0);
-      if (typeof mm.id === 'number') idByKey.set(key, mm.id);
+    // MÓDULOS (con/sin): indexo por tipo
+    const byTipo = new Map<TipoModulo, { id: number }>();
+    for (const mm of (modelo.modulos ?? [])) {
+      if (mm.tipo === 'con_borde' || mm.tipo === 'sin_borde') {
+        byTipo.set(mm.tipo, { id: mm.id });
+      }
     }
 
+    // En este punto, si manejás el stock de módulos por movimientos, podrías:
+    // const stockMap = this.stock.getStockMap(id); // { [moduloId]: qty }
+    // y setear cantidades reales. Si no, dejamos 0 por defecto.
+
     this.modulesFA.clear();
-    for (const def of this.cols) {
-      const key = `${def.tipo}|${def.presentacionMl ?? 0}`;
-      const cant = qtyByKey.get(key) ?? 0;
-      const realId = idByKey.get(key) ?? null;
-      this.modulesFA.push(this.createModuleRow(def.tipo, def.presentacionMl ?? null, cant, realId));
+    for (const t of this.FIXED_TYPES) {
+      const mod = byTipo.get(t);
+      const qty = 0; // reemplazá por stock real si ya lo calculás
+      this.modulesFA.push(this.createModuleRow(t, qty, mod?.id ?? null));
+    }
+
+    // PLAQUETAS
+    this.plaquetasFA.clear();
+    if ((modelo as any).plaquetas?.length) {
+      // si ya tenés id de plaquetas, respétalo
+      const first = (modelo as any).plaquetas[0];
+      this.plaquetasFA.push(this.createSimpleRow(0, first?.id ?? null));
+    } else {
+      this.plaquetasFA.push(this.createSimpleRow(0, null));
+    }
+
+    // TAPAS
+    this.tapasFA.clear();
+    if ((modelo as any).tapas?.length) {
+      const first = (modelo as any).tapas[0];
+      this.tapasFA.push(this.createSimpleRow(0, first?.id ?? null));
+    } else {
+      this.tapasFA.push(this.createSimpleRow(0, null));
     }
 
     this.saving.set(false);
   }
 
   // =======================
-  // Serialización (payload)
+  // Serialización
   // =======================
+  /** Serializa el form a Modelo (solo definición; las cantidades son para UI o movimiento inicial si querés) */
   private toPayload(): Modelo {
-    // getRawValue() incluye disabled (tipo/presentación)
     const raw = this.form.getRawValue() as {
       nombre: string;
       comentario?: string;
       tipoOperacion: 'ingreso' | 'egreso';
-      modules: Array<{
-        id: number | null;
-        tipo: TipoModulo;                // llega por getRawValue aunque esté disabled
-        presentacionMl: PresentacionMl | null;
-        cantidad: number;                // si luego la usás para movimientos
-      }>;
+      modules: Array<{ id: number | null; tipo: TipoModulo; cantidad: number }>;
+      plaquetas: Array<{ id: number | null; cantidad: number }>;
+      tapas: Array<{ id: number | null; cantidad: number }>;
     };
 
     return {
       id: this.modelId() ?? undefined,
       nombre: (raw.nombre || '').trim(),
       comentario: (raw.comentario || '').trim(),
-      // En Modelo persistimos solo la definición (sin cantidad)
+
+      // Persistimos SOLO la definición (ids/tipos), no las cantidades
       modulos: raw.modules.map(m => ({
         id: m.id ?? undefined,
         tipo: m.tipo,
-        presentacionMl: m.presentacionMl ?? undefined
-      }))
-    } as Modelo;
+      })),
+
+      // En estos dos, sólo los ids (la cantidad la manejarás por movimientos si corresponde)
+      plaquetas: raw.plaquetas.map(p => ({
+        id: p.id ?? undefined,
+      })),
+
+      tapas: raw.tapas.map(t => ({
+        id: t.id ?? undefined,
+      })),
+    } as unknown as Modelo; // ← si tu interfaz ya tiene plaquetas/tapas, quitá el 'unknown as'
   }
 
   // =======================
@@ -186,14 +235,14 @@ export class NewModelComponent implements OnInit {
       const payload = this.toPayload();
 
       if (this.editMode()) {
-        const ok = this.stock.updateModelo(payload);
+        const ok = this.stock.updateModelo(payload as any);
         if (!ok) {
           this.errorMsg.set('No se pudo actualizar el modelo ❌');
         } else {
           this.successMsg.set('Modelo actualizado correctamente ✅');
         }
       } else {
-        this.stock.createModelo(payload);
+        this.stock.createModelo(payload as any);
         this.successMsg.set('Modelo guardado correctamente ✅');
       }
 
@@ -206,12 +255,5 @@ export class NewModelComponent implements OnInit {
     } finally {
       this.saving.set(false);
     }
-  }
-  qty(m: Modelo, tipo: TipoModulo, presentacionMl?: PresentacionMl): number {
-    const map = this.stock.getStockMap(m.id);
-    const mod = (m.modulos || []).find(mm =>
-      mm.tipo === tipo && ((mm.presentacionMl ?? 0) === (presentacionMl ?? 0))
-    );
-    return mod ? (map[mod.id] ?? 0) : 0;
   }
 }

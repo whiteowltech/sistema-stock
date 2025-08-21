@@ -42,55 +42,93 @@
       }
     </div>
 
-    <!-- Módulos: filas fijas SIEMPRE -->
+    <!-- ========================= -->
+    <!-- Sección: Módulos del modelo -->
+    <!-- ========================= -->
     <div class="modules-header">
       <h3>Módulos</h3>
-      <!-- Sin botón "Añadir módulo" -->
+      <small class="muted">Cada modelo maneja “con borde” y “sin borde”.</small>
     </div>
 
-    <div class="modules-list readonly">
+    <div class="modules-list fixed">
       @for (m of modulesFA.controls; track $index) {
         <div class="module-row" [formGroup]="m">
-          <!-- Tipo (bloqueado) -->
-          <select class="col tipo" formControlName="tipo" [disabled]="true">
-            <option [ngValue]="null" disabled>Tipo…</option>
-            <option value="pantalla">Pantalla / display</option>
-            <option value="pegamento">Pegamento</option>
-            <option value="plaqueta_carga">Plaqueta de carga</option>
-            <option value="alcohol_isopropilico">Alcohol isopropílico</option>
-            <option value="tapa_trasera">Tapa trasera</option>
-          </select>
-
-          <!-- Presentación (solo alcohol, bloqueado) -->
-          @if (m.get('tipo')?.value === 'alcohol_isopropilico') {
-          <select class="col presentacion" formControlName="presentacionMl" [disabled]="true">
-              <option [ngValue]="null" disabled>Presentación…</option>
-              <option [ngValue]="1000">1 litro</option>
-              <option [ngValue]="500">500 ml</option>
-              <option [ngValue]="250">250 ml</option>
-            </select>
-          }
-
-          <!-- Cantidad (>= 0 en todos los casos) -->
+          <input type="hidden" formControlName="tipo">
+          <div class="col etiqueta">
+            {{ m.get('tipo')?.value === 'con_borde' ? 'Módulo con borde' : 'Módulo sin borde' }}
+          </div>
           <input
             class="col cantidad"
             type="number"
             formControlName="cantidad"
             placeholder="Cantidad"
-            [attr.min]="0"
+            [attr.min]="editMode() ? 0 : 1"
             step="1"
           >
-
-          <!-- Sin botón eliminar -->
           <div class="row-errors">
             @if (submitted() && m.get('cantidad')?.invalid) {
-              <small class="error">La cantidad debe ser ≥ 0.</small>
+              <small class="error">La cantidad debe ser ≥ {{ editMode() ? 0 : 1 }}.</small>
             }
           </div>
         </div>
       }
     </div>
 
+    <!-- ========================= -->
+    <!-- Sección: Plaquetas de carga -->
+    <!-- ========================= -->
+    <div class="modules-header">
+      <h3>Plaquetas de carga</h3>
+    </div>
+    <div class="modules-list fixed">
+      @for (p of plaquetasFA.controls; track $index) {
+        <div class="module-row" [formGroup]="p">
+          <div class="col etiqueta">Plaqueta de carga</div>
+          <input
+            class="col cantidad"
+            type="number"
+            formControlName="cantidad"
+            placeholder="Cantidad"
+            [attr.min]="editMode() ? 0 : 1"
+            step="1"
+          >
+          <div class="row-errors">
+            @if (submitted() && p.get('cantidad')?.invalid) {
+              <small class="error">La cantidad debe ser ≥ {{ editMode() ? 0 : 1 }}.</small>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ========================= -->
+    <!-- Sección: Tapas traseras -->
+    <!-- ========================= -->
+    <div class="modules-header">
+      <h3>Tapas traseras</h3>
+    </div>
+    <div class="modules-list fixed">
+      @for (t of tapasFA.controls; track $index) {
+        <div class="module-row" [formGroup]="t">
+          <div class="col etiqueta">Tapa trasera</div>
+          <input
+            class="col cantidad"
+            type="number"
+            formControlName="cantidad"
+            placeholder="Cantidad"
+            [attr.min]="editMode() ? 0 : 1"
+            step="1"
+          >
+          <div class="row-errors">
+            @if (submitted() && t.get('cantidad')?.invalid) {
+              <small class="error">La cantidad debe ser ≥ {{ editMode() ? 0 : 1 }}.</small>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Actions -->
     <div class="actions">
       <button type="submit" class="btn primary" [disabled]="saving()">
         {{ editMode() ? 'Actualizar' : 'Guardar' }}
