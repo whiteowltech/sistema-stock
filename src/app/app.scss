@@ -26,9 +26,11 @@ body {
   backdrop-filter: blur(6px);
 }
 
-.brand { display: flex; align-items: center; gap: 10px; }
-.logo { font-size: 20px; }
-.title { font-weight: 600; letter-spacing: .2px; color: #0b1220; }
+.brand { display: flex; align-items: center;
+   gap:8px; }
+
+.logo { width: 35px;  }
+.title { font-weight: 600; letter-spacing: .2px; color: #ffffff; text-align: center }
 
 .nav { display: flex; gap: 12px; align-items: center; color: #0b1220;}
 
