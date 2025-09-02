@@ -42,7 +42,7 @@
           </th>
           <th (click)="onSort('modelo')">
             Modelo
-            @if (sortKey==='modelo') { <span class="dir">({{sortDir}})</span> }
+            <!-- @if (sortKey==='modelo') { <span class="dir">({{sortDir}})</span> } -->
           </th>
           <th (click)="onSort('tipo')">
             Movimiento
@@ -58,24 +58,21 @@
       <tbody>
         @for (m of visible; track trackByMovimiento($index, m)) {
           <tr>
-            <td>{{ m.fecha | date:'yyyy-MM-dd HH:mm' }}</td>
-
+            <td>{{ m.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>
-              <details>
-                <summary>{{ m.modelo }}</summary>
-                <ul class="mods">
-                  @for (it of m.items; track trackByItem($index, it)) {
-                    <li class="modulo-item">
-                      <span class="modulo">{{ it.concepto }}</span>
-                      <span class="cantidad"> x{{ it.cantidad }}</span>
+              <span class="modelo-id" (click)="toggleExpand(m.id)">
+                {{ m.nombre }}
+              </span>
+              @if (expanded[m.id]) {
+                <ul class="exp-items" style="margin-top:0.5em;">
+                  @for (it of m.items; track it.categoria) {
+                    <li>
+                      <strong>{{ it.categoria ? it.categoria : 'Cantidad' }}</strong>: x{{ it.cantidad }}
                     </li>
-                  } @empty {
-                    <li class="muted">Sin items</li>
                   }
                 </ul>
-              </details>
+              }
             </td>
-
             <td>
               @if (m.tipo === 'ingreso') {
                 <span class="badge ingreso">↑ Ingreso</span>
@@ -83,7 +80,6 @@
                 <span class="badge egreso">↓ Egreso</span>
               }
             </td>
-
             <td>{{ m.comentario }}</td>
           </tr>
         } @empty {

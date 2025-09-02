@@ -2,54 +2,57 @@
   <div class="header">
     <h2>Modelos</h2>
     <div class="actions-right">
-      <input
-        type="search"
-        class="search"
-        placeholder="Buscar modelo…"
-        (input)="onSearch($any($event.target).value)"
-      >
+      <input type="search" class="search" placeholder="Buscar modelo…" (input)="onSearch($any($event.target).value)">
       <a class="btn primary" routerLink="/modelos/nuevo">Gestionar Modelo</a>
     </div>
   </div>
 
   @if (loading()) {
-    <div class="hint">Cargando…</div>
+  <div class="hint">Cargando…</div>
   } @else if (!filtered().length) {
-    <div class="hint">No hay modelos que coincidan.</div>
+  <div class="hint">No hay modelos que coincidan.</div>
   } @else {
-    <div class="tabla-wrapper">
-      <table class="tabla-modulos">
-        <thead>
-          <tr>
-            <th>Modelo</th>
-            <th style="text-align:right">Módulo con borde</th>
-            <th style="text-align:right">Módulo sin borde</th>
-            <th style="text-align:right">Plaqueta de carga</th>
-            <th style="text-align:right">Tapa trasera</th>
-            <th style="width:80px"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (m of filtered(); track m.id) {
-            <tr>
-              <td>
-                <a [routerLink]="['/modelos', m.id]" class="link">{{ m.nombre }}</a>
-              </td>
-
-              <!-- cantidades por categoría -->
-              <td style="text-align:right">{{ qtyModulo(m, 'con_borde') }}</td>
-              <td style="text-align:right">{{ qtyModulo(m, 'sin_borde') }}</td>
-              <td style="text-align:right">{{ qtyPlaqueta(m) }}</td>
-              <td style="text-align:right">{{ qtyTapa(m) }}</td>
-
-              <td class="actions">
-                <a class="btn tiny" [routerLink]="['/modelos', m.id]">Editar</a>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <div class="tabla-wrapper">
+    <table class="tabla-modulos">
+      <thead>
+        <tr>
+          <th>Modelo</th>
+          <th>Con Borde</th>
+          <th>Sin Borde</th>
+          <th>Plaqueta Carga</th>
+          <th>Tapa Trasera</th>
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of filtered(); track m.id) {
+        <tr>
+          <td>
+            <a [routerLink]="['/modelos', m.id]" class="link">{{ m.nombre }}</a>
+          </td>
+          <td>{{ moduloInfo(m, 'con_borde') }}</td>
+          <td>{{ moduloInfo(m, 'sin_borde') }}</td>
+          <td>{{ moduloInfo(m, 'plaqueta_carga') }}</td>
+          <td>{{ moduloInfo(m, 'tapa_trasera') }}</td>
+          <td class="actions">
+              <a class="btn tiny" [routerLink]="['/', m.id]" style="pointer-events: none; opacity: 0.5;" style="pointer-events: none; opacity: 0.5;">
+                <span class="icon-pencil"></span>Editar
+              </a>
+              <!-- <a class="btn tiny" [routerLink]="['/modelos', m.id]" style="pointer-events: none; opacity: 0.5;" style="pointer-events: none; opacity: 0.5;">
+                <span class="icon-pencil"></span>Editar
+              </a> -->
+            
+            
+            <span style="display:inline-block;width:8px;"></span>
+            <a class="btn tiny" [routerLink]="['/modelos/gestion', m.id]">
+              <span class="icon-cog"></span>Gestionar
+            </a>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
   }
 
 
@@ -63,28 +66,36 @@
   </div>
 
   @if (insLoading()) {
-    <div class="hint">Cargando insumos…</div>
+  <div class="hint">Cargando insumos…</div>
   } @else if (!insumos().length) {
-    <div class="hint">Aún no hay insumos definidos.</div>
+  <div class="hint">Aún no hay insumos definidos.</div>
   } @else {
-    <div class="tabla-wrapper">
-      <table class="tabla-modulos">
-        <thead>
-          <tr>
-            <th>Insumo</th>
-            <th style="text-align:right">Cantidad</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (ins of insumos(); track ins.tipo) {
-            <tr>
-              <td>{{ ins.etiqueta }}</td>
-              <td style="text-align:right">{{ ins.cantidad }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+  <div class="tabla-wrapper">
+    <table class="tabla-modulos">
+      <thead>
+        <tr>
+          <th>Insumo</th>
+          <th style="text-align:right">Cantidad</th>
+          <th style="text-align:right">Precio Costo</th>
+          <th style="text-align:right">Precio Venta</th>
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (insumo of insumos(); track insumo.id) {
+        <tr>
+          <td>{{ insumo.tipoInsumo }}</td>
+          <td style="text-align:right">{{ insumo.cantidad }}</td>
+          <td style="text-align:right">$ {{ insumo.precio_costo }}</td>
+          <td style="text-align:right">$ {{ insumo.precio_venta }}</td>
+          <td class="actions">
+            <a class="btn tiny" [routerLink]="['/insumos/gestion', insumo.id]">Gestionar</a>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
   }
 
 </div>

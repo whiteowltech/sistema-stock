@@ -1,212 +1,225 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Input } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { StockService } from '../../../../core/services/stock';
 import { DatePipe } from '@angular/common';
-import { MovimientoView, TipoMovimiento } from '../../../../interfaces/stock';
+import { Movimiento } from '../../../../interfaces/stock';
+import { Modelo } from '../../../../interfaces/stock';
+import { TipoModulo } from '../../../../interfaces/stock';
 
-type SortKey = 'fecha' | 'modelo' | 'comentario' | 'tipo' | 'cantidad';
+// Tipos alineados con tu API
+export type TipoMovimiento = 'ingreso' | 'egreso';
 
 @Component({
   selector: 'app-stock-list',
-  standalone: true,
   templateUrl: './stock-list.html',
   styleUrls: ['./stock-list.scss'],
   imports: [DatePipe],
 })
-export class StockListComponent implements OnChanges {
-  // 👉 Entradas
-  @Input() movimientos: MovimientoView[] = [];
+export class StockListComponent implements OnInit {
+  expanded: Record<string, boolean> = {};
+  toggleExpand(id: string) {
+    this.expanded[id] = !this.expanded[id];
+  }
+  // Array de modelos para la tabla
+  modelos = signal<Modelo[]>([]);
 
-  // 👉 util en template (paginador)
-  Math = Math;
+  // Devuelve cantidad, precio_costo y precio_venta para un tipo de módulo
+  moduloInfo(modelo: Modelo, tipo: TipoModulo): string {
+    const item = modelo.items.find((i: { tipo: TipoModulo; cantidad: string; precio_costo: string; precio_venta: string }) => i.tipo === tipo);
+    if (!item) return '0';
+    return `${item.cantidad} / $${item.precio_costo} / $${item.precio_venta}`;
+  }
+  itemsResumen(items: { categoria: TipoModulo; cantidad: string }[]): string {
+    if (!items?.length) return '';
+    return items.map(it => `${it.categoria} x${it.cantidad}`).join(', ');
+  }
+  @Input() movimientos: Movimiento[] = [];
 
-  // 👉 filtros / orden / paginación
-  filtro: 'todos' | TipoMovimiento = 'todos';
-  searchTerm = '';
-  sortKey: SortKey = 'fecha';
+  // ==== inyección de servicio ====
+  private stock = inject(StockService);
+
+  // ==== estado ====
+  loading = signal<boolean>(false);
+  // private allMovimientos = signal<MovimientoView[]>([]);
+  private allMovimientos = signal<Movimiento[]>([]);
+
+  // filtros y búsqueda
+  private filtro = signal<'todos' | 'ingreso' | 'egreso'>('todos');
+  private search = signal<string>('');
+
+  // orden
+  sortKey: keyof Movimiento = 'fecha';
   sortDir: 'asc' | 'desc' = 'desc';
 
+  // paginado
   page = 1;
   pageSize = 10;
-  total = 0;
 
-  // 👉 data derivada
-  private working: MovimientoView[] = [];
-  visible: MovimientoView[] = [];
+  // para usar Math en el template (Math.ceil)
+  public Math = Math;
 
-  ngOnChanges() {
-    this.rebuild();
-  }
+  // ==== derivado: filtrado + búsqueda + orden ====
+  private filteredSorted = computed<Movimiento[]>(() => {
+    const q = this.normalize(this.search());
+    const f = this.filtro();
 
-  // ======== UI handlers ========
-  setFiltro(f: 'todos' | TipoMovimiento) {
-    this.filtro = f;
-    this.page = 1;
-    this.rebuild();
-  }
+    // 1) filtrar por tipo
+    let data = this.allMovimientos().filter(m => f === 'todos' ? true : m.tipo === f);
 
-  onSearch(term: string) {
-    this.searchTerm = (term ?? '').trim().toLowerCase();
-    this.page = 1;
-    this.rebuild();
-  }
-
-  onSort(key: SortKey) {
-    if (this.sortKey === key) {
-      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortKey = key;
-      this.sortDir = 'asc';
-    }
-    this.rebuild();
-  }
-
-  goTo(page: number) {
-    this.page = page;
-    this.slicePage();
-  }
-
-  // ======== pipeline ========
-  private rebuild() {
-    // 1) filtro tipo
-    let data =
-      this.filtro === 'todos'
-        ? [...(this.movimientos ?? [])]
-        : (this.movimientos ?? []).filter((m) => m.tipo === this.filtro);
-
-    // 2) búsqueda
-    if (this.searchTerm) {
-      data = data.filter((m) => {
-        const modelo = (m.modelo ?? '').toString().toLowerCase();
-        const comentario = (m.comentario ?? '').toString().toLowerCase();
-        const tipo = (m.tipo ?? '').toString().toLowerCase();
-        return (
-          modelo.includes(this.searchTerm) ||
-          comentario.includes(this.searchTerm) ||
-          tipo.includes(this.searchTerm)
-        );
+    // 2) búsqueda (modeloId, comentario, tipo, items.categoria)
+    if (q) {
+      data = data.filter(m => {
+        // Busca en modeloId, comentario, tipo y cada categoria de items
+        const campos = [
+          m.modeloId,
+          m.comentario ?? '',
+          m.tipo,
+          ...m.items.map(it => it.categoria)
+        ];
+        return campos.some(txt => this.normalize(String(txt)).includes(q));
       });
     }
 
-    // 3) ordenar
-    data.sort((a, b) => this.compare(a, b, this.sortKey, this.sortDir));
+    // 3) ordenar por columna
+    const dir = this.sortDir === 'asc' ? 1 : -1;
+    data = [...data].sort((a, b) => {
+      let va: any = (a as any)[this.sortKey];
+      let vb: any = (b as any)[this.sortKey];
 
-    // 4) paginar
-    this.working = data;
-    this.total = data.length;
-    this.page = Math.max(1, Math.min(this.page, this.maxPage()));
-    this.slicePage();
-  }
+      if (this.sortKey === 'fecha') {
+        // comparar como fecha
+        const da = new Date(va).getTime();
+        const db = new Date(vb).getTime();
+        return (da - db) * dir;
+      }
 
-  private slicePage() {
-    const start = (this.page - 1) * this.pageSize;
-    this.visible = this.working.slice(start, start + this.pageSize);
-  }
-
-  private maxPage() {
-    return Math.max(1, Math.ceil(this.total / this.pageSize));
-  }
-
-  private compare(a: any, b: any, key: SortKey, dir: 'asc' | 'desc') {
-    let va = a?.[key];
-    let vb = b?.[key];
-
-    if (key === 'fecha') {
-      va = va ? new Date(va).getTime() : 0;
-      vb = vb ? new Date(vb).getTime() : 0;
-    }
-
-    if (typeof va === 'string') va = va.toLowerCase();
-    if (typeof vb === 'string') vb = vb.toLowerCase();
-
-    const res = va > vb ? 1 : va < vb ? -1 : 0;
-    return dir === 'asc' ? res : -res;
-    }
-
-  // ======== trackBy ========
-  trackByMovimiento(_i: number, m: MovimientoView) {
-    return m.id ?? `${m.modelo}-${m.fecha}-${m.tipo}-${this.itemsSignature(m)}`;
-  }
-
-  trackByItem(_i: number, it: { concepto: string; cantidad: number }) {
-    return `${it.concepto}-${it.cantidad}`;
-  }
-
-  private itemsSignature(m: MovimientoView): string {
-    return (m.items ?? [])
-      .map((i: any) => `${i.concepto}:${i.cantidad}`)
-      .join('|');
-  }
-
-  // ======== EXPORTS ========
-  // CSV helper
-  private toCSV(headers: string[], rows: string[][]): string {
-    const head = headers.join(',');
-    const body = rows.map((r) =>
-      r.map((v) => `"${(v ?? '').toString().replaceAll('"', '""')}"`).join(',')
-    );
-    return [head, ...body].join('\r\n');
-  }
-
-  // descarga
-  private downloadCSV(name: string, csv: string) {
-    const blob = new Blob([new Uint8Array([0xef, 0xbb, 0xbf]), csv], {
-      type: 'text/csv;charset=utf-8;',
+      // string-ish compare
+      va = this.normalize(String(va ?? ''));
+      vb = this.normalize(String(vb ?? ''));
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
+      return 0;
     });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    a.href = url;
-    a.download = `${name}_${stamp}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
-  // formateo fecha rápido (para export)
-  private fmtAR = new Intl.DateTimeFormat('es-AR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+    return data;
   });
 
-  // detalle ítems en una celda
-  private detalleLinea(m: MovimientoView): string {
-    const arr = m?.items ?? [];
-    if (!Array.isArray(arr) || !arr.length) return '';
-    return arr.map((d) => `${d.concepto}:${d.cantidad}`).join('; ');
+  // ==== getters mapeados al template ====
+  get total(): number {
+    return this.filteredSorted().length;
   }
 
-  // Exporta TODO lo filtrado (ignora paginación)
-  exportFiltradoCSV() {
-    const rows = this.working; // ya filtrado/ordenado
-    if (!rows?.length) return;
-
-    const headers = ['Fecha', 'Modelo', 'Tipo', 'Comentario', 'Detalle'];
-    const csvRows = rows.map((r) => [
-      r.fecha ? this.fmtAR.format(new Date(r.fecha)) : '',
-      r.modelo ?? '',
-      r.tipo ?? '',
-      r.comentario ?? '',
-      this.detalleLinea(r),
-    ]);
-
-    this.downloadCSV('movimientos_filtrado', this.toCSV(headers, csvRows));
+  get visible(): Movimiento[] {
+  const start = (this.page - 1) * this.pageSize;
+  return this.filteredSorted().slice(start, start + this.pageSize);
   }
 
-  // Exporta SOLO la página visible
-  exportPaginaCSV() {
-    const rows = this.visible;
-    if (!rows?.length) return;
+  // ==== ciclo de vida ====
+  async ngOnInit(): Promise<void> {
+    // Cargar modelos desde el servicio y guardarlos en la señal
+    try {
+      const modelos = await firstValueFrom(this.stock.getModelos());
+      this.modelos.set(modelos);
+    } catch (e) {
+      this.modelos.set([]);
+    }
+    // Si se reciben movimientos por input, usarlos directamente
+    if (this.movimientos && this.movimientos.length) {
+      this.allMovimientos.set(this.movimientos);
+      this.goTo(1);
+      return;
+    }
+    // Si no, cargar desde el servicio
+    await this.cargarMovimientos();
+  }
 
-    const headers = ['Fecha', 'Modelo', 'Tipo', 'Comentario', 'Detalle'];
-    const csvRows = rows.map((r) => [
-      r.fecha ? this.fmtAR.format(new Date(r.fecha)) : '',
-      r.modelo ?? '',
-      r.tipo ?? '',
-      r.comentario ?? '',
-      this.detalleLinea(r),
-    ]);
+  // ==== acciones del template ====
+  setFiltro(f: 'todos' | 'ingreso' | 'egreso'): void {
+    this.filtro.set(f);
+    this.goTo(1);
+  }
 
-    this.downloadCSV('movimientos_pagina', this.toCSV(headers, csvRows));
+  onSearch(q: string): void {
+    this.search.set(q);
+    this.goTo(1);
+  }
+
+  onSort(key: 'fecha' | 'modelo' | 'tipo' | 'comentario'): void {
+    const realKey = key === 'modelo' ? 'modeloId' : key;
+    if (this.sortKey === realKey) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortKey = realKey as keyof Movimiento;
+      this.sortDir = 'asc';
+    }
+    this.goTo(1);
+  }
+
+  goTo(p: number): void {
+    const totalPages = Math.max(1, Math.ceil(this.total / this.pageSize));
+    this.page = Math.min(Math.max(1, p), totalPages);
+  }
+
+  // trackBy para @for
+  trackByMovimiento = (_: number, m: Movimiento) => m.id;
+  // Map items to expected shape for trackBy and template
+  trackByItem = (_: number, it: { concepto: string; cantidad: number }) => `${it.concepto}:${it.cantidad}`;
+  // Helper to map Movimiento.items to { concepto, cantidad }
+  mapItem(it: { categoria: TipoModulo; cantidad: string }) {
+    return { concepto: it.categoria, cantidad: Number(it.cantidad) };
+  }
+
+  // ==== helpers ====
+  private normalize(s: string): string {
+    return (s ?? '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/\p{Diacritic}/gu, '')
+      .trim();
+  }
+
+  // ==== carga desde el servicio ====
+  private async cargarMovimientos(): Promise<void> {
+    this.loading.set(true);
+    try {
+      // Intentamos varias firmas comunes sin romper tu service:
+      // - this.stock.getMovimientos()
+      // - this.stock.listMovimientos()
+      // - this.stock.listMovements()
+      const anyStock = this.stock as any;
+      const call =
+        anyStock.getMovimientos?.() ??
+        anyStock.listMovimientos?.() ??
+        anyStock.listMovements?.();
+
+  let data: Movimiento[] = [];
+
+      if (call?.subscribe) {
+        // observable
+        data = await firstValueFrom(call);
+      } else if (typeof call?.then === 'function') {
+        // promise
+        data = await call;
+      } else if (Array.isArray(call)) {
+        // arreglo directo
+        data = call;
+      } else if (anyStock.movimientos$?.subscribe) {
+        // observable expuesto como propiedad
+        data = await firstValueFrom(anyStock.movimientos$);
+      } else if (typeof anyStock.movimientos === 'function') {
+        // función sync
+        data = anyStock.movimientos();
+      }
+
+      this.allMovimientos.set(Array.isArray(data) ? data : []);
+      console.log('Movimientos cargados:', data);
+      this.goTo(1); // recalcular página por si cambió el total
+    } catch (e) {
+      console.error('Error cargando movimientos:', e);
+      this.allMovimientos.set([]);
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

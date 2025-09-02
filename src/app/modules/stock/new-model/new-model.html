@@ -1,138 +1,85 @@
+<!-- new-model.html (simplificado y legible) -->
 <div class="new-model">
-  @if (!editMode()) {
-    <h2>Alta de modelo</h2>
-  } @else {
-    <h2>{{ form.get('nombre')?.value || 'Modelo' }}</h2>
-  }
 
-  @if (successMsg()) { <div class="alert success">{{ successMsg() }}</div> }
-  @if (errorMsg())   { <div class="alert error">{{ errorMsg() }}</div> }
+  <!-- Título -->
+  <h2>
+    {{ !editMode ? 'Alta de modelo' : (form.get('nombre')?.value || 'Modelo') }}
+  </h2>
+
+  <!-- Alertas -->
+  <div *ngIf="successMsg" class="alert success">{{ successMsg }}</div>
+  <div *ngIf="errorMsg" class="alert error">{{ errorMsg }}</div>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-    <!-- Nombre -->
-    <div class="field">
-      <label>Nombre del modelo</label>
-      <input type="text" formControlName="nombre" placeholder="Ej: iPhone 12">
-      @if (submitted() && form.get('nombre')?.invalid) {
-        <small class="error">El nombre es obligatorio (máx. 80 caracteres).</small>
-      }
-    </div>
 
-    <!-- Tipo de operación inicial (solo en alta) -->
-    @if (!editMode()) {
-      <div class="field radios">
+    <!-- Datos generales -->
+    <section class="card">
+      <div class="field">
+        <label for="nombre">Nombre del modelo</label>
+        <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: iPhone 12" />
+        @if (submitted && form.get('nombre')?.invalid) {
+        <small class="error">El nombre es obligatorio (máx. 80 caracteres).</small>
+        }
+      </div>
+
+      @if (!editMode) {
+      <div class="field">
         <label>Tipo de operación inicial</label>
         <div class="radio-group">
           <label class="radio">
-            <input type="radio" formControlName="tipoOperacion" value="ingreso"> Ingreso
+            <input type="radio" formControlName="tipoOperacion" value="ingreso" /> Ingreso
           </label>
           <label class="radio">
-            <input type="radio" formControlName="tipoOperacion" value="egreso"> Egreso
+            <input type="radio" formControlName="tipoOperacion" value="egreso" /> Egreso
           </label>
         </div>
       </div>
-    }
+      }
 
-    <!-- Comentario -->
-    <div class="field">
-      <label>Comentario (opcional)</label>
-      <textarea formControlName="comentario" rows="2" placeholder="Ej: Alta inicial, lote 123"></textarea>
-      @if (submitted() && form.get('comentario')?.errors?.['maxlength']) {
+      <div class="field">
+        <label for="comentario">Comentario (opcional)</label>
+        <textarea id="comentario" formControlName="comentario" rows="2"
+          placeholder="Ej: Alta inicial, lote 123"></textarea>
+        @if (submitted && form.get('comentario')?.errors?.['maxlength']) {
         <small class="error">Máximo 300 caracteres.</small>
-      }
-    </div>
+        }
+      </div>
+    </section>
 
-    <!-- ========================= -->
-    <!-- Sección: Módulos del modelo -->
-    <!-- ========================= -->
-    <div class="modules-header">
-      <h3>Módulos</h3>
-      <small class="muted">Cada modelo maneja “con borde” y “sin borde”.</small>
-    </div>
-
-    <div class="modules-list fixed">
-      @for (m of modulesFA.controls; track $index) {
-        <div class="module-row" [formGroup]="m">
-          <input type="hidden" formControlName="tipo">
-          <div class="col etiqueta">
-            {{ m.get('tipo')?.value === 'con_borde' ? 'Módulo con borde' : 'Módulo sin borde' }}
-          </div>
-          <input
-            class="col cantidad"
-            type="number"
-            formControlName="cantidad"
-            placeholder="Cantidad"
-            [attr.min]="editMode() ? 0 : 1"
-            step="1"
-          >
-          <div class="row-errors">
-            @if (submitted() && m.get('cantidad')?.invalid) {
-              <small class="error">La cantidad debe ser ≥ {{ editMode() ? 0 : 1 }}.</small>
-            }
-          </div>
+    <!-- Módulos -->
+    <section class="card">
+      <h3>Recursos</h3>
+      <div class="rows">
+        <div class="row labels-row">
+          <div class="label">Items</div>
+          <div class="label">Cantidad</div>
+          <div class="label">Precio costo</div>
+          <div class="label">Precio venta</div>
         </div>
-      }
-    </div>
-
-    <!-- ========================= -->
-    <!-- Sección: Plaquetas de carga -->
-    <!-- ========================= -->
-    <div class="modules-header">
-      <h3>Plaquetas de carga</h3>
-    </div>
-    <div class="modules-list fixed">
-      @for (p of plaquetasFA.controls; track $index) {
-        <div class="module-row" [formGroup]="p">
-          <div class="col etiqueta">Plaqueta de carga</div>
-          <input
-            class="col cantidad"
-            type="number"
-            formControlName="cantidad"
-            placeholder="Cantidad"
-            [attr.min]="editMode() ? 0 : 1"
-            step="1"
-          >
-          <div class="row-errors">
-            @if (submitted() && p.get('cantidad')?.invalid) {
-              <small class="error">La cantidad debe ser ≥ {{ editMode() ? 0 : 1 }}.</small>
-            }
+        @for (group of itemsFA; track $index) {
+        <div class="row" [formGroup]="group">
+          <div class="label">
+            {{ group.value.tipo === 'con_borde' ? 'Módulo con borde' :
+            group.value.tipo === 'sin_borde' ? 'Módulo sin borde' :
+            group.value.tipo === 'plaqueta_carga' ? 'Plaqueta de carga' : 'Tapa trasera' }}
           </div>
+          <input type="number" min="0" formControlName="cantidad" placeholder="Cantidad" />
+          <input type="number" min="0" formControlName="precio_costo" placeholder="Precio costo" step="0.01" />
+          <input type="number" min="0" formControlName="precio_venta" placeholder="Precio venta" step="0.01" />
+          @if (submitted && group.get('cantidad')?.invalid) {
+          <small class="error">Cantidad inválida.</small>
+          }
         </div>
-      }
-    </div>
-
-    <!-- ========================= -->
-    <!-- Sección: Tapas traseras -->
-    <!-- ========================= -->
-    <div class="modules-header">
-      <h3>Tapas traseras</h3>
-    </div>
-    <div class="modules-list fixed">
-      @for (t of tapasFA.controls; track $index) {
-        <div class="module-row" [formGroup]="t">
-          <div class="col etiqueta">Tapa trasera</div>
-          <input
-            class="col cantidad"
-            type="number"
-            formControlName="cantidad"
-            placeholder="Cantidad"
-            [attr.min]="editMode() ? 0 : 1"
-            step="1"
-          >
-          <div class="row-errors">
-            @if (submitted() && t.get('cantidad')?.invalid) {
-              <small class="error">La cantidad debe ser ≥ {{ editMode() ? 0 : 1 }}.</small>
-            }
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Actions -->
+        }
+      </div>
+    </section>
+    <!-- Acciones -->
     <div class="actions">
-      <button type="submit" class="btn primary" [disabled]="saving()">
-        {{ editMode() ? 'Actualizar' : 'Guardar' }}
+      <button type="submit" class="btn primary" [disabled]="saving">
+        {{ editMode ? 'Actualizar' : 'Guardar' }}
       </button>
     </div>
+
+
   </form>
 </div>

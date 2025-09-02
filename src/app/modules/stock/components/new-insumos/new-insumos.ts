@@ -1,12 +1,9 @@
-// src/app/features/insumos/new-insumos/new-insumos.ts
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { InsumosService } from '../../../../core/services/insumos';
-import { TIPO_INSUMO_LABEL } from '../../../../interfaces/stock';
 
 @Component({
   selector: 'app-new-insumos',
@@ -15,76 +12,108 @@ import { TIPO_INSUMO_LABEL } from '../../../../interfaces/stock';
   templateUrl: './new-insumos.html',
   styleUrls: ['./new-insumos.scss'],
 })
-export class NewInsumosComponent {
+export class NewInsumosComponent implements OnInit {
+  errorMsg: string = '';
+  submitted = false;
   private fb = inject(FormBuilder);
   private insumosSrv = inject(InsumosService);
-  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  // UI state
-  saving = signal(false);
-  submitted = signal(false); 
-  successMsg = signal<string | null>(null);
-  errorMsg = signal<string | null>(null);
-
-  // opciones del select
-  insumos = this.insumosSrv.getInsumos();
-  label = TIPO_INSUMO_LABEL;
-
-  // formulario
   form = this.fb.group({
-    tipo: this.fb.control<'ingreso' | 'egreso'>('ingreso', { nonNullable: true, validators: [Validators.required] }),
-    insumoId: this.fb.control<number | null>(null, { validators: [Validators.required] }),
-    cantidad: this.fb.control<number>(1, { nonNullable: true, validators: [Validators.required, Validators.min(1)] }),
-    comentario: this.fb.control<string>('', { nonNullable: true }),
+    tipo: ['ingreso'],
+    nombre: [''],
+    cantidad: [1],
+    comentario: [''],
+    precio_costo: [''],
+    precio_venta: ['']
   });
 
-  // submit
-  onSubmit() {
-    if (this.form.invalid) return;
-    this.submitted.set(true); 
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();             // 👈 muestra errores
-      return;
-    }
-    const { tipo, insumoId, cantidad, comentario } = this.form.getRawValue();
-    if (!insumoId || !cantidad || !tipo) return;
-
-    try {
-      this.saving.set(true);
-
-      // Registramos movimiento: el service aplica el signo según 'tipo'
-      this.insumosSrv.createMovimiento({
-        fecha: new Date().toISOString().slice(0, 10),
-        tipo, // 'ingreso' | 'egreso'
-        comentario: comentario ?? '',
-        items: [{ insumoId, cantidad }],
+  ngOnInit(): void {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = idParam ? idParam : null; // No usar Number si es string/uuid
+    console.log('Insumo ID from route:', id);
+    if (id) {
+      this.insumosSrv.getInsumo(id).subscribe({
+        next: (insumo) => {
+          this.form.patchValue({
+            nombre: insumo.tipoInsumo,
+            cantidad: insumo.cantidad,
+            precio_costo: insumo.precio_costo,
+            precio_venta: insumo.precio_venta
+          });
+        },
+        error: (err) => {
+          this.errorMsg = err?.error?.error || 'No se pudo cargar el insumo.';
+        }
       });
-
-      this.successMsg.set('Movimiento de insumo registrado ✅');
-      // reset básico
-      this.form.reset({ tipo: 'ingreso', insumoId: null, cantidad: 1, comentario: '' });
-      setTimeout(() => this.successMsg.set(null), 2500);
-
-      // opcional: navegar a una lista de insumos
-      // this.router.navigate(['/insumos']);
-    } catch (e) {
-      console.error(e);
-      this.errorMsg.set('No se pudo registrar el movimiento');
-      setTimeout(() => this.errorMsg.set(null), 3500);
-    } finally {
-      this.saving.set(false);
     }
   }
-  setSuccess(msg: string) {
-    this.successMsg.set(msg);
-    this.errorMsg.set('');
-    setTimeout(() => this.successMsg.set(''), 4000); // 👈 se borra a los 4s
-  }
 
-  setError(msg: string) {
-    this.errorMsg.set(msg);
-    this.successMsg.set('');
-    setTimeout(() => this.errorMsg.set(''), 4000); // 👈 se borra a los 4s
+  submit() {
+    this.submitted = true;
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = idParam ? idParam : null; // No usar Number si es string/uuid
+    if (this.form.valid) {
+      const raw = this.form.value;
+      if (!raw.nombre || !raw.nombre.trim()) {
+        this.errorMsg = 'Debes ingresar el nombre del insumo.';
+        return;
+      }
+      if (!id) {
+      const nuevoInsumo = {
+        tipoInsumo: raw.nombre,
+        cantidad: Number(raw.cantidad),
+        precio_costo: String(raw.precio_costo ?? '0'),
+        precio_venta: String(raw.precio_venta ?? '0'),
+        tipo: (raw.tipo ?? 'ingreso') as 'ingreso' | 'egreso',
+        comentario: raw.comentario ?? ''
+      };
+      console.log('Creating insumo with data:', nuevoInsumo);
+      this.insumosSrv.createInsumo(nuevoInsumo).subscribe({
+        next: (insumo) => {
+          this.insumosSrv.addMovimientoInsumo(insumo.id, {
+            tipo: nuevoInsumo.tipo,
+            comentario: nuevoInsumo.comentario,
+            cantidad: Number(raw.cantidad),
+            fecha: new Date().toISOString()
+          }).subscribe({
+            next: () => {
+              this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });
+              this.submitted = false;
+              this.errorMsg = '';
+            },
+            error: (err) => {
+              this.errorMsg = err?.error?.error || 'No se pudo registrar el movimiento.';
+            }
+          });
+        },
+        error: (err) => {
+          this.errorMsg = err?.error?.error || 'No se pudo crear el insumo.';
+        }
+        
+      })}
+      else{
+        const updatedInsumo = {
+          tipoInsumo: raw.nombre,
+          cantidad: Number(raw.cantidad),
+          precio_costo: String(raw.precio_costo ?? '0'),
+          precio_venta: String(raw.precio_venta ?? '0'),
+          tipo: (raw.tipo ?? 'ingreso') as 'ingreso' | 'egreso',
+          comentario: raw.comentario ?? ''
+        };  
+        console.log('Updating insumo with ID:', Number(id));
+        this.insumosSrv.addMovimientoInsumo(id, updatedInsumo).subscribe({
+          next: () => {
+            this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });
+            this.submitted = false;
+            this.errorMsg = '';
+          },
+          error: (err) => {
+            this.errorMsg = err?.error?.error || 'No se pudo actualizar el insumo.';
+          }
+        });
+      }
+    }
   }
-
-}
+  }
+  

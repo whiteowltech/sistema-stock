@@ -1,9 +1,9 @@
 // src/app/modules/stock/pages/stock-home/stock-home.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { StockListComponent } from '../../components/stock-list/stock-list';
-import {  MovementList, Movimiento } from '../../components/movement-list/movement-list';
 import { StockService } from '../../../../core/services/stock';
-import { MovimientoView } from '../../../../interfaces/stock';
+import { Movimiento } from '../../../../interfaces/stock';
 // import { StockItem } from '../../../../interfaces/stock';
 
 @Component({
@@ -11,8 +11,11 @@ import { MovimientoView } from '../../../../interfaces/stock';
     imports: [StockListComponent], // ← 
   templateUrl: './stock-home.html',
 })
-export class StockHomeComponent {
+export class StockHomeComponent implements OnInit {
   private stock = inject(StockService);
-  movimientos: MovimientoView[] = this.stock.getMovimientosView(); // 👈 listo para la vista
+  movimientos: Movimiento[] = [];
 
+  async ngOnInit(): Promise<void> {
+    this.movimientos = await firstValueFrom(this.stock.getMovimientos());
+  }
 }

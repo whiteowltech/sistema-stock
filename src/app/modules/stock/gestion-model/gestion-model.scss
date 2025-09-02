@@ -1,3 +1,53 @@
+.popup-error {
+  position: fixed;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffeaea;
+  color: #c00;
+  border: 2px solid #c00;
+  padding: 18px 32px 18px 18px;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  opacity: 1;
+  transition: opacity 0.5s;
+}
+.popup-error.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+.close-btn {
+  background: none;
+  border: none;
+  color: #c00;
+  font-size: 1.2em;
+  cursor: pointer;
+  font-weight: bold;
+}
+// Alertas custom
+.alert.error {
+  background: #ffeaea;
+  color: #c00;
+  border: 1px solid #c00;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  font-weight: bold;
+}
+.alert.success {
+  background: #eaffea;
+  color: #080;
+  border: 1px solid #080;
+  padding: 12px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  font-weight: bold;
+}
 .card .rows {
   display: grid;
   grid-template-columns: 1fr;
@@ -46,7 +96,7 @@
   margin-top: 0.2rem;
   grid-column: 2 / span 3;
 }
-.new-model {
+.gestion-model {
   max-width: 640px;
   margin: 2rem auto;
   padding: 2rem;

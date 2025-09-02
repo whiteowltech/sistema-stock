@@ -1,0 +1,88 @@
+<!-- gestion-model.html (simplificado y legible) -->
+<div class="gestion-model">
+  
+  <!-- Título -->
+  <h2>
+    {{ !editMode ? 'Gestión  de modelo' : (form.get('nombre')?.value || 'Modelo') }}
+  </h2>
+  
+  <!-- Alertas -->
+  @if (this.successMsg != '') {
+    <div class="alert success">{{ successMsg }}</div>
+  }
+  <!-- Popup de error -->
+  @if (this.errorMsg != '') {
+    <div class="alert error">{{ errorMsg }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+    <!-- Datos generales -->
+    <section class="card">
+      <div class="field">
+        <label for="nombre">Nombre del modelo</label>
+        <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: iPhone 12" />
+        @if (submitted && form.get('nombre')?.invalid) {
+          <small class="error">El nombre es obligatorio (máx. 80 caracteres).</small>
+        }
+      </div>
+
+      @if (!editMode) {
+        <div class="field">
+          <label>Tipo de operación inicial</label>
+          <div class="radio-group">
+            <label class="radio">
+              <input type="radio" formControlName="tipoOperacion" value="ingreso" /> Ingreso
+            </label>
+            <label class="radio">
+              <input type="radio" formControlName="tipoOperacion" value="egreso" /> Egreso
+            </label>
+          </div>
+        </div>
+      }
+
+      <div class="field">
+        <label for="comentario">Comentario (opcional)</label>
+        <textarea id="comentario" formControlName="comentario" rows="2" placeholder="Ej: Alta inicial, lote 123"></textarea>
+        @if (submitted && form.get('comentario')?.errors?.['maxlength']) {
+          <small class="error">Máximo 300 caracteres.</small>
+        }
+      </div>
+    </section>
+
+    <!-- Módulos -->
+    <section class="card">
+      <h3>Recursos</h3>
+      <div class="rows">
+        <div class="row labels-row">
+            <div class="label">Items</div>
+            <div class="label">Cantidad</div>
+            <div class="label">Precio costo</div>
+            <div class="label">Precio venta</div>
+        </div>
+        @for (group of itemsFA; track $index) {
+          <div class="row" [formGroup]="group">
+            <div class="label">
+              {{ group.value.tipo === 'con_borde' ? 'Módulo con borde' :
+                 group.value.tipo === 'sin_borde' ? 'Módulo sin borde' :
+                 group.value.tipo === 'plaqueta_carga' ? 'Plaqueta de carga' : 'Tapa trasera' }}
+            </div>
+            <input type="number" min="0" formControlName="cantidad" placeholder="Cantidad" />
+            <input type="number" min="0" formControlName="precio_costo" placeholder="Precio costo" step="0.01" />
+            <input type="number" min="0" formControlName="precio_venta" placeholder="Precio venta" step="0.01" />
+            @if (submitted && group.get('cantidad')?.invalid) {
+              <small class="error">Cantidad inválida.</small>
+            }
+          </div>
+        }
+      </div>
+    </section>
+    <!-- Acciones -->
+    <div class="actions">
+      <button type="submit" class="btn primary" [disabled]="saving">
+        {{ editMode ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+
+  </form>
+</div>

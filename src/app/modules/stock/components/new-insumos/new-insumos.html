@@ -2,10 +2,10 @@
 <div class="new-insumo">
   <h2>Registrar insumo</h2>
 
-  @if (successMsg()) { <div class="alert success fade-in-out">{{ successMsg() }}</div> }
-  @if (errorMsg())   { <div class="alert error fade-in-out">{{ errorMsg() }}</div> }
+  @if (errorMsg)   { <div class="alert error fade-in-out">{{ errorMsg }}</div> }
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+   
     <!-- Toggle Ingreso / Egreso -->
     <div class="tipo-movimiento">
       <button
@@ -25,29 +25,34 @@
       </button>
     </div>
 
-    @if (submitted() && form.get('tipo')?.invalid) {
+    @if (submitted && form.get('tipo')?.invalid) {
       <small class="error" style="text-align:center">Elegí el tipo de movimiento.</small>
     }
 
-    <!-- Insumo -->
+    <!-- Nombre de Insumo -->
     <div class="field">
-      <label>Insumo</label>
-      <select formControlName="insumoId">
-        <option [ngValue]="null" disabled>-- Elegir insumo --</option>
-        @for (i of insumos; track i.id) {
-          <option [ngValue]="i.id">{{ label[i.tipo] }}</option>
-        }
-      </select>
-      @if (submitted() && form.get('insumoId')?.invalid) {
-        <small class="error">Seleccioná un insumo.</small>
+      <label>Nombre de Insumo</label>
+      <input type="text" formControlName="nombre" placeholder="Ej: Alcohol isopropílico 250 ml">
+      @if (submitted && form.get('nombre')?.invalid) {
+        <small class="error">Ingresá el nombre del insumo.</small>
       }
     </div>
+    <!-- Precio de costo -->
+      <div class="field">
+        <label>Precio de costo</label>
+        <input type="number" formControlName="precio_costo" min="0" step="0.01" placeholder="$0.00">
+      </div>
 
+      <!-- Precio de venta -->
+      <div class="field">
+        <label>Precio de venta</label>
+        <input type="number" formControlName="precio_venta" min="0" step="0.01" placeholder="$0.00">
+      </div>
     <!-- Cantidad -->
     <div class="field">
       <label>Cantidad</label>
       <input type="number" formControlName="cantidad" min="1" step="1">
-      @if (submitted() && form.get('cantidad')?.invalid) {
+      @if (submitted && form.get('cantidad')?.invalid) {
         <small class="error">La cantidad debe ser ≥ 1.</small>
       }
     </div>
@@ -59,7 +64,7 @@
     </div>
 
     <div class="actions">
-      <button class="btn primary" type="submit" [disabled]="submitted() && form.invalid">
+  <button class="btn primary" type="submit" [disabled]="submitted && form.invalid">
         Guardar
       </button>
     </div>

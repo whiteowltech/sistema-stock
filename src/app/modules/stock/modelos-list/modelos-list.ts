@@ -1,22 +1,28 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { StockService } from '../../../core/services/stock';
 import { InsumosService } from '../../../core/services/insumos';
 import {
   Modelo,
   TipoModulo,            // 'con_borde' | 'sin_borde'
-  TipoInsumo,
-  TIPO_INSUMO_LABEL
 } from '../../../interfaces/stock';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-modelos-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   templateUrl: './modelos-list.html',
   styleUrls: ['./modelos-list.scss'],
 })
 export class ModelosList implements OnInit {
+  // Devuelve cantidad, precio_costo y precio_venta para un tipo de módulo
+  moduloInfo(modelo: Modelo, tipo: TipoModulo): string {
+    const item = modelo.items.find(i => i.tipo === tipo);
+    if (!item) return '0';
+    return `${item.cantidad} / $${item.precio_costo} / $${item.precio_venta}`;
+  }
   private stock = inject(StockService);
   private ins   = inject(InsumosService);
 
@@ -43,42 +49,35 @@ export class ModelosList implements OnInit {
 
   // ---------- Insumos (stock global) ----------
   insLoading = signal(true);
-  // estructura para la tabla de insumos
-  insumos = signal<{ tipo: TipoInsumo; etiqueta: string; cantidad: number }[]>([]);
+  // estructura para la tabla de insumos, ahora incluye precios
+  insumos = signal<{ id: number; tipoInsumo: string; cantidad: number; precio_costo: number; precio_venta: number }[]>([]);
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     // Modelos
-    this.modelos.set(this.stock.getModelos());
+    const modelos = await firstValueFrom(this.stock.getModelos());
+    this.modelos.set(modelos);
     this.loading.set(false);
 
-    // Insumos
-    const catalogo = this.ins.getInsumos();      // [{ id, tipo, ... }]
-    const stockMap = this.ins.getStockMap();     // { [insumoId]: cantidad }
-    const rows = catalogo.map(i => ({
-      tipo: i.tipo,
-      etiqueta: TIPO_INSUMO_LABEL[i.tipo],
-      cantidad: stockMap[i.id] ?? 0,
-    }));
-    this.insumos.set(rows);
-    this.insLoading.set(false);
+
+    // Insumos (API)
+    try {
+      const catalogo = await firstValueFrom(this.ins.getInsumos());
+      const rows = catalogo.map(i => ({
+        id: i.id,
+        tipoInsumo: i.tipoInsumo,
+        cantidad: i.cantidad,
+        precio_costo: Number(i.precio_costo),
+        precio_venta: Number(i.precio_venta)
+      }));
+      console.log('Insumos cargados:', rows);
+      this.insumos.set(rows);
+    } catch (e) {
+      this.insumos.set([]);
+    } finally {
+      this.insLoading.set(false);
+    }
   }
 
-  // ---------- Helpers para cantidades por columna ----------
 
-  // Stock de módulos por variante fija
-  qtyModulo(m: Modelo, tipo: TipoModulo): number {
-    const map = this.stock.getStockMap(m.id); // { [moduloId]: cantidad }
-    const mod = (m.modulos || []).find(mm => mm.tipo === tipo);
-    return mod ? (map[mod.id] ?? 0) : 0;
-  }
-
-  // Stock de Plaquetas por modelo (vía servicio)
-  qtyPlaqueta(m: Modelo): number {
-    return this.stock.getPlaquetaStock(m.id) ?? 0;
-  }
-
-  // Stock de Tapas por modelo (vía servicio)
-  qtyTapa(m: Modelo): number {
-    return this.stock.getTapaStock(m.id) ?? 0;
-  }
+  
 }
