@@ -5,6 +5,10 @@ import { Modelo, Movimiento } from '../../interfaces/stock';
 
 @Injectable({ providedIn: 'root' })
 export class StockService {
+  // Editar precios de los módulos de un modelo
+  patchPreciosModelo(modeloId: string, items: Array<{ categoria: string; precio_costo?: string | number; precio_venta?: string | number }>): Observable<any> {
+    return this.http.patch<any>(`${this.API}/modelos/${modeloId}/precios`, { items });
+  }
   // Editar un modelo existente
   updateModelo(modelo: Modelo): Observable<Modelo> {
     return this.http.put<Modelo>(`${this.API}/${modelo.id}`, modelo);

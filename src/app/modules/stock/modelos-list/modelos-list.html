@@ -35,14 +35,9 @@
           <td>{{ moduloInfo(m, 'plaqueta_carga') }}</td>
           <td>{{ moduloInfo(m, 'tapa_trasera') }}</td>
           <td class="actions">
-              <a class="btn tiny" [routerLink]="['/', m.id]" style="pointer-events: none; opacity: 0.5;" style="pointer-events: none; opacity: 0.5;">
-                <span class="icon-pencil"></span>Editar
-              </a>
-              <!-- <a class="btn tiny" [routerLink]="['/modelos', m.id]" style="pointer-events: none; opacity: 0.5;" style="pointer-events: none; opacity: 0.5;">
-                <span class="icon-pencil"></span>Editar
-              </a> -->
-            
-            
+            <button class="btn tiny" (click)="openPreciosModal(m)">
+              <span class="icon-pencil"></span>Editar precios
+            </button>
             <span style="display:inline-block;width:8px;"></span>
             <a class="btn tiny" [routerLink]="['/modelos/gestion', m.id]">
               <span class="icon-cog"></span>Gestionar
@@ -52,6 +47,51 @@
         }
       </tbody>
     </table>
+  </div>
+  }
+
+
+
+
+  <!-- Modal edición de precios fuera del div principal -->
+  @if (showPreciosModal()) {
+  <div class="modal-precios-bg">
+    <div class="modal-precios">
+      <h3>Editar precios de módulos</h3>
+      <form (submit)="guardarPrecios(); $event.preventDefault()">
+        <table style="width:100%;margin-bottom:16px;">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Precio costo</th>
+              <th>Precio venta</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of preciosForm(); track item.categoria; let idx = $index) {
+            <tr>
+              <td>{{ item.categoria }}</td>
+              <td>
+                <input type="number" min="0" step="0.01" [value]="item.precio_costo"
+                  (input)="onPrecioChange(idx, 'precio_costo', $any($event.target).value)" />
+              </td>
+              <td>
+                <input type="number" min="0" step="0.01" [value]="item.precio_venta"
+                  (input)="onPrecioChange(idx, 'precio_venta', $any($event.target).value)" />
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+        @if (preciosMsg()) {
+        <div class="alert error">{{ preciosMsg() }}</div>
+        }
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" class="btn" (click)="closePreciosModal()">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar</button>
+        </div>
+      </form>
+    </div>
   </div>
   }
 
@@ -89,6 +129,10 @@
           <td style="text-align:right">$ {{ insumo.precio_costo }}</td>
           <td style="text-align:right">$ {{ insumo.precio_venta }}</td>
           <td class="actions">
+            <button class="btn tiny" (click)="openInsumoPreciosModal(insumo)">
+              <span class="icon-pencil"></span>Editar precios
+            </button>
+            <span style="display:inline-block;width:8px;"></span>
             <a class="btn tiny" [routerLink]="['/insumos/gestion', insumo.id]">Gestionar</a>
           </td>
         </tr>
@@ -96,6 +140,44 @@
       </tbody>
     </table>
   </div>
-  }
 
+
+  <!-- Modal edición de precios de insumo fuera del div principal -->
+  @if (showInsumoPreciosModal()) {
+  <div class="modal-precios-bg">
+    <div class="modal-precios">
+      <h3>Editar precios de insumo</h3>
+      <form (submit)="guardarInsumoPrecios(); $event.preventDefault()">
+        <table style="width:100%;margin-bottom:16px;">
+          <thead>
+            <tr>
+              <th>Precio costo</th>
+              <th>Precio venta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input type="number" min="0" step="0.01" [value]="insumoPreciosForm().precio_costo"
+                  (input)="onInsumoPrecioChange('precio_costo', $any($event.target).value)" />
+              </td>
+              <td>
+                <input type="number" min="0" step="0.01" [value]="insumoPreciosForm().precio_venta"
+                  (input)="onInsumoPrecioChange('precio_venta', $any($event.target).value)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        @if (insumoPreciosMsg()) {
+        <div class="alert error">{{ insumoPreciosMsg() }}</div>
+        }
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" class="btn" (click)="closeInsumoPreciosModal()">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+  }
 </div>

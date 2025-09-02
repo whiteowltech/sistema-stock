@@ -17,6 +17,98 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./modelos-list.scss'],
 })
 export class ModelosList implements OnInit {
+  // --- Modal edición precios insumo ---
+  showInsumoPreciosModal = signal(false);
+  insumoEdit = signal<{ id: number; tipoInsumo: string; cantidad: number; precio_costo: number | string; precio_venta: number | string } | null>(null);
+  insumoPreciosForm = signal<{ precio_costo: string; precio_venta: string }>({ precio_costo: '', precio_venta: '' });
+  insumoPreciosMsg = signal('');
+
+  openInsumoPreciosModal(insumo: { id: number; tipoInsumo: string; cantidad: number; precio_costo: number | string; precio_venta: number | string }) {
+    this.insumoEdit.set(insumo);
+    this.insumoPreciosForm.set({
+      precio_costo: String(insumo.precio_costo ?? ''),
+      precio_venta: String(insumo.precio_venta ?? '')
+    });
+    this.insumoPreciosMsg.set('');
+    this.showInsumoPreciosModal.set(true);
+  }
+
+  closeInsumoPreciosModal() {
+    this.showInsumoPreciosModal.set(false);
+    this.insumoEdit.set(null);
+    this.insumoPreciosMsg.set('');
+  }
+
+  onInsumoPrecioChange(field: 'precio_costo' | 'precio_venta', value: string) {
+    const form = { ...this.insumoPreciosForm() };
+    form[field] = value;
+    this.insumoPreciosForm.set(form);
+  }
+
+  async guardarInsumoPrecios() {
+    const insumo = this.insumoEdit();
+    if (!insumo) return;
+    try {
+      await firstValueFrom(this.ins.patchPreciosInsumo(insumo.id, this.insumoPreciosForm()));
+      this.insumoPreciosMsg.set('Precios actualizados correctamente');
+      this.showInsumoPreciosModal.set(false);
+      // Recargar insumos
+      const catalogo = await firstValueFrom(this.ins.getInsumos());
+      const rows = catalogo.map(i => ({
+        id: i.id,
+        tipoInsumo: i.tipoInsumo,
+        cantidad: i.cantidad,
+        precio_costo: Number(i.precio_costo),
+        precio_venta: Number(i.precio_venta)
+      }));
+      this.insumos.set(rows);
+    } catch (e: any) {
+      this.insumoPreciosMsg.set(e?.error?.error || 'Error al actualizar precios');
+    }
+  }
+  // Estado para el modal de edición de precios
+  showPreciosModal = signal(false);
+  modeloEdit = signal<Modelo | null>(null);
+  preciosForm = signal<{ categoria: string; precio_costo: string; precio_venta: string }[]>([]);
+  preciosMsg = signal('');
+
+  openPreciosModal(modelo: Modelo) {
+    this.modeloEdit.set(modelo);
+    this.preciosForm.set(modelo.items.map(it => ({
+      categoria: it.tipo,
+      precio_costo: String(it.precio_costo ?? ''),
+      precio_venta: String(it.precio_venta ?? '')
+    })));
+    this.preciosMsg.set('');
+    this.showPreciosModal.set(true);
+  }
+
+  closePreciosModal() {
+    this.showPreciosModal.set(false);
+    this.modeloEdit.set(null);
+    this.preciosMsg.set('');
+  }
+
+  onPrecioChange(idx: number, field: 'precio_costo' | 'precio_venta', value: string) {
+    const arr = [...this.preciosForm()];
+    arr[idx][field] = value;
+    this.preciosForm.set(arr);
+  }
+
+  async guardarPrecios() {
+    const modelo = this.modeloEdit();
+    if (!modelo) return;
+    try {
+      await firstValueFrom(this.stock.patchPreciosModelo(modelo.id, this.preciosForm()));
+      this.preciosMsg.set('Precios actualizados correctamente');
+      this.showPreciosModal.set(false);
+      // Opcional: recargar modelos
+      const modelos = await firstValueFrom(this.stock.getModelos());
+      this.modelos.set(modelos);
+    } catch (e: any) {
+      this.preciosMsg.set(e?.error?.error || 'Error al actualizar precios');
+    }
+  }
   // Devuelve cantidad, precio_costo y precio_venta para un tipo de módulo
   moduloInfo(modelo: Modelo, tipo: TipoModulo): string {
     const item = modelo.items.find(i => i.tipo === tipo);

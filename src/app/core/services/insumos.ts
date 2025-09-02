@@ -6,6 +6,10 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class InsumosService {
+  // PATCH precios de un insumo
+  patchPreciosInsumo(id: string | number, precios: { precio_costo?: string | number; precio_venta?: string | number }) {
+    return this.http.patch<{ ok: boolean }>(`${this.API}/${id}/precios`, precios);
+  }
   private API = 'http://localhost:4000/insumos';
   constructor(private http: HttpClient) {}
 
