@@ -16,4 +16,9 @@ export class App {
   get logueado() {
     return localStorage.getItem('logueado') === '1';
   }
+
+  logout() {
+    localStorage.removeItem('logueado');
+    window.location.reload();
+  }
 }

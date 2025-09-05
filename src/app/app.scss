@@ -32,7 +32,34 @@ body {
 .logo { width: 35px;  }
 .title { font-weight: 600; letter-spacing: .2px; color: #ffffff; text-align: center }
 
+
 .nav { display: flex; gap: 12px; align-items: center; color: #0b1220;}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent-2);
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-size: 1rem;
+}
+.btn.tiny {
+  padding: 5px 10px;
+  font-size: 0.95rem;
+}
+.btn.danger {
+  background: #c02626;
+  color: #fff;
+}
+.btn.danger:hover {
+  background: #a61b1b;
+}
+.btn:not(.danger):hover {
+  background: var(--accent);
+}
 
 .nav a {
   padding: 8px 10px;
