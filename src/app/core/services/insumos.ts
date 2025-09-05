@@ -33,6 +33,7 @@ export class InsumosService {
     tipo: 'ingreso' | 'egreso';
     comentario?: string;
   }) {
+    console.log('Creating insumo with data:', data);
     return this.http.post<Insumo>(`${this.API}`, data);
   }
 

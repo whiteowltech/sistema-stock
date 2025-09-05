@@ -68,30 +68,41 @@ export class NewInsumosComponent implements OnInit {
         tipo: (raw.tipo ?? 'ingreso') as 'ingreso' | 'egreso',
         comentario: raw.comentario ?? ''
       };
-      console.log('Creating insumo with data:', nuevoInsumo);
-      this.insumosSrv.createInsumo(nuevoInsumo).subscribe({
-        next: (insumo) => {
-          this.insumosSrv.addMovimientoInsumo(insumo.id, {
-            tipo: nuevoInsumo.tipo,
-            comentario: nuevoInsumo.comentario,
-            cantidad: Number(raw.cantidad),
-            fecha: new Date().toISOString()
-          }).subscribe({
-            next: () => {
-              this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });
-              this.submitted = false;
-              this.errorMsg = '';
-            },
-            error: (err) => {
-              this.errorMsg = err?.error?.error || 'No se pudo registrar el movimiento.';
-            }
-          });
-        },
-        error: (err) => {
-          this.errorMsg = err?.error?.error || 'No se pudo crear el insumo.';
-        }
+      
+        this.insumosSrv.createInsumo(nuevoInsumo).subscribe({
+          next: (insumo) => {
+            this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });
+            this.submitted = false;
+            this.errorMsg = '';
+          },
+          error: (err) => {
+            this.errorMsg = err?.error?.error || 'No se pudo crear el insumo.';
+          }
+        });
+      }
+      // this.insumosSrv.createInsumo(nuevoInsumo).subscribe({
+      //   next: (insumo) => {
+      //     this.insumosSrv.addMovimientoInsumo(insumo.id, {
+      //       tipo: nuevoInsumo.tipo,
+      //       comentario: nuevoInsumo.comentario,
+      //       cantidad: Number(raw.cantidad),
+      //       fecha: new Date().toISOString()
+      //     }).subscribe({
+      //       next: () => {
+      //         this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });
+      //         this.submitted = false;
+      //         this.errorMsg = '';
+      //       },
+      //       error: (err) => {
+      //         this.errorMsg = err?.error?.error || 'No se pudo registrar el movimiento.';
+      //       }
+      //     });
+      //   },
+      //   error: (err) => {
+      //     this.errorMsg = err?.error?.error || 'No se pudo crear el insumo.';
+      //   }
         
-      })}
+      // })}
       else{
         const updatedInsumo = {
           tipoInsumo: raw.nombre,

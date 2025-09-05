@@ -15,6 +15,17 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
         <button type="submit">Entrar</button>
       </form>
       <div *ngIf="error" class="error">Usuario o contraseña incorrectos</div>
+      <hr style="margin:2rem 0;">
+      <form [formGroup]="licenseForm" (ngSubmit)="guardarLicencia()">
+        <input type="text" formControlName="licenseId" placeholder="Licencia" required />
+        <button type="submit">Ingresar licencia</button>
+      </form>
+      <div *ngIf="licSaved" style="color:green;text-align:center;margin-top:1rem;">Licencia guardada correctamente</div>
+      <div *ngIf="licenseActual" style="margin-top:1rem;text-align:center;">
+        <span style="color:#222">Licencia actual:</span>
+        <span style="font-weight:bold;color:#22d3ee">{{ licenseActual }}</span>
+        <button type="button" (click)="borrarLicencia()" style="margin-left:10px;padding:2px 8px;border-radius:4px;background:#c02626;color:#fff;border:none;">Borrar</button>
+      </div>
     </div>
   `,
   styles: [`
@@ -29,11 +40,20 @@ export class LoginComponent {
   form: FormGroup;
   error = false;
 
+  licSaved = false;
+  licenseForm: FormGroup;
+  licenseActual: string | null = null;
+
+
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
       usuario: ['', Validators.required],
       contrasena: ['', Validators.required],
     });
+    this.licenseForm = this.fb.group({
+      licenseId: ['', Validators.required],
+    });
+    this.licenseActual = localStorage.getItem('licenseId');
   }
 
   login() {
@@ -44,5 +64,19 @@ export class LoginComponent {
     } else {
       this.error = true;
     }
+  }
+
+  guardarLicencia() {
+    const { licenseId } = this.licenseForm.value;
+    localStorage.setItem('licenseId', licenseId);
+    this.licenseActual = licenseId;
+    this.licSaved = true;
+    setTimeout(() => this.licSaved = false, 2000);
+  }
+
+  borrarLicencia() {
+    localStorage.removeItem('licenseId');
+    this.licenseActual = null;
+    this.licenseForm.reset();
   }
 }

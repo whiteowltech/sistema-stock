@@ -5,11 +5,19 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import cors from 'cors';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
+
+// Middleware CORS para permitir x-license-id y el origen del frontend
+app.use(cors({
+  origin: 'http://localhost:4200',
+  allowedHeaders: ['Content-Type', 'x-license-id'],
+  credentials: true
+}));
 const angularApp = new AngularNodeAppEngine();
 
 /**
