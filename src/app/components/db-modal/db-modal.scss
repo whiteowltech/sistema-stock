@@ -1,0 +1,95 @@
+.modal-precios-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.35);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.db-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 340px;
+  max-width: 95vw;
+  max-height: 90vh;
+  padding: 32px 28px 28px 28px;
+  border-radius: 18px;
+  box-shadow: 0 12px 40px rgba(30,40,80,0.18);
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  animation: modalFadeIn 0.25s;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; transform: translate(-50%, -60%) scale(0.98); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.db-modal h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+  color: #1e293b;
+  letter-spacing: 0.01em;
+}
+
+.db-modal label {
+  font-size: 1rem;
+  color: #334155;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.db-modal input[type="file"] {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px;
+  background: #f1f5f9;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.db-modal .btn {
+  font-size: 1rem;
+  border-radius: 8px;
+  padding: 0.5em 1.2em;
+  background: linear-gradient(90deg, #e0e7ff 0%, #f1f5f9 100%);
+  color: #1d4ed8;
+  font-weight: 500;
+  box-shadow: 0 1px 4px rgba(60, 60, 120, 0.07);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  margin-right: 8px;
+}
+.db-modal .btn.primary {
+  background: linear-gradient(90deg, #6366f1 0%, #60a5fa 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.13);
+  font-weight: 600;
+}
+.db-modal .btn:hover {
+  background: linear-gradient(90deg, #dbeafe 0%, #e0e7ff 100%);
+  box-shadow: 0 2px 8px rgba(60, 60, 120, 0.13);
+  transform: translateY(-2px) scale(1.04);
+}
+.db-modal .btn.primary:hover {
+  background: linear-gradient(90deg, #818cf8 0%, #38bdf8 100%);
+}
+.db-modal .alert.error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.98rem;
+}
+

@@ -1,0 +1,33 @@
+
+<div class="modal-precios-bg">
+  <div class="modal-precios db-modal">
+    <h3>Exportar / Importar Base de Datos</h3>
+    <div style="margin-bottom:16px;">
+      <label>
+        <input type="radio" name="dbmode" value="export" [checked]="mode()==='export'" (change)="setMode('export')"> Exportar
+      </label>
+      <label style="margin-left:24px;">
+        <input type="radio" name="dbmode" value="import" [checked]="mode()==='import'" (change)="setMode('import')"> Importar
+      </label>
+    </div>
+    @if (mode()==='export') {
+      <div style="margin-bottom:24px;">
+        <button class="btn primary" (click)="exportDb()" [disabled]="loading()">Descargar base de datos</button>
+      </div>
+    } @else {
+      <div style="margin-bottom:16px;">
+        <input type="file" accept=".db" (change)="onFileChange($event)">
+      </div>
+      <div style="margin-bottom:24px;">
+        <button class="btn primary" (click)="importDb()" [disabled]="loading()">Importar base de datos</button>
+      </div>
+    }
+    @if (errorMsg()) {
+      <div class="alert error">{{ errorMsg() }}</div>
+    }
+    <div style="display:flex;justify-content:flex-end;">
+      <button class="btn" (click)="close()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
