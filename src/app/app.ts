@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet, Router } from '@angular/router';
+import { inject } from '@angular/core';
 import { DbModalComponent } from './components/db-modal/db-modal';
 import { CommonModule } from '@angular/common';
 import { LoginComponent } from './shared/login.component';
@@ -17,8 +18,9 @@ export class App {
     return localStorage.getItem('logueado') === '1';
   }
 
+  public router = inject(Router);
   logout() {
     localStorage.removeItem('logueado');
-    window.location.reload();
+    this.router.navigate(['/login']);
   }
 }

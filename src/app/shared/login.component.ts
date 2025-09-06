@@ -1,4 +1,6 @@
+import { inject } from '@angular/core';
 import { Component, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
@@ -37,6 +39,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
   `]
 })
 export class LoginComponent {
+  router = inject(Router);
   form: FormGroup;
   error = false;
 
@@ -60,7 +63,7 @@ export class LoginComponent {
     const { usuario, contrasena } = this.form.value;
     if (usuario === 'Lucas' && contrasena === 'Lucas2025') {
       localStorage.setItem('logueado', '1');
-      window.location.reload();
+      this.router.navigate(['/modelos']);
     } else {
       this.error = true;
     }

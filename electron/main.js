@@ -1,31 +1,31 @@
+// Archivo principal de Electron
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
-function createWindow () {
+function createWindow() {
   const win = new BrowserWindow({
-    width: 1280,
+    width: 1200,
     height: 800,
-    icon: path.join(__dirname, 'icon.ico'),
     webPreferences: {
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js'),
-    }
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+    icon: path.join(__dirname, 'icon.ico'),
   });
 
-  // Cargá la build de Angular
-  const indexPath = path.join(__dirname, '../dist/stock-app/browser/index.html');
-  win.loadFile(indexPath);
-
-  // win.webContents.openDevTools(); // opcional
+  win.loadFile(path.join(__dirname, '../dist/stock-app/browser/index.html'));
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });

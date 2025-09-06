@@ -9,7 +9,7 @@ import {
 
 import { StockService } from '../../../core/services/stock';
 import { Modelo, Modulo, TipoModulo } from '../../../interfaces/stock';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -22,6 +22,7 @@ import { firstValueFrom } from 'rxjs';
 export class GestionModelComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef as any) as ChangeDetectorRef;
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   submitted = false;
   errorMsg = '';
   successMsg = '';
@@ -117,7 +118,7 @@ export class GestionModelComponent implements OnInit {
           setTimeout(() => {
             this.successMsg = '';
             this.cdr.detectChanges();
-            window.location.reload();
+            this.router.navigate(['/modelos']);
           }, 2000);
         },
         error: (error) => {
@@ -127,7 +128,7 @@ export class GestionModelComponent implements OnInit {
           setTimeout(() => {
             this.errorMsg = '';
             this.cdr.detectChanges();
-            window.location.reload();
+            this.router.navigate(['/modelos']);
           }, 2000);
           setTimeout(() => {
             this.errorMsg = '';
