@@ -6,6 +6,7 @@ import { DatePipe } from '@angular/common';
 import { Movimiento } from '../../../../interfaces/stock';
 import { Modelo } from '../../../../interfaces/stock';
 import { TipoModulo } from '../../../../interfaces/stock';
+import { CategoriaNombrePipe } from '../../pipes/categoria-nombre.pipe';
 
 // Tipos alineados con tu API
 export type TipoMovimiento = 'ingreso' | 'egreso';
@@ -14,7 +15,7 @@ export type TipoMovimiento = 'ingreso' | 'egreso';
   selector: 'app-stock-list',
   templateUrl: './stock-list.html',
   styleUrls: ['./stock-list.scss'],
-  imports: [DatePipe],
+  imports: [DatePipe, CategoriaNombrePipe],
 })
 export class StockListComponent implements OnInit {
   expanded: Record<string, boolean> = {};

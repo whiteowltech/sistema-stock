@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { InsumosService } from '../../../../core/services/insumos';
+import e from 'express';
 
 @Component({
   selector: 'app-new-insumos',
@@ -14,7 +15,9 @@ import { InsumosService } from '../../../../core/services/insumos';
 })
 export class NewInsumosComponent implements OnInit {
   errorMsg: string = '';
+  successMsg: string = '';
   submitted = false;
+  isGestionar = true; // Nueva variable para controlar el modo gestionar
   private fb = inject(FormBuilder);
   private insumosSrv = inject(InsumosService);
   private route = inject(ActivatedRoute);
@@ -47,6 +50,9 @@ export class NewInsumosComponent implements OnInit {
         }
       });
     }
+    else {
+      this.isGestionar = false;
+    }
   }
 
   submit() {
@@ -74,6 +80,7 @@ export class NewInsumosComponent implements OnInit {
             this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });
             this.submitted = false;
             this.errorMsg = '';
+            this.successMsg = 'Insumo creado correctamente';
           },
           error: (err) => {
             this.errorMsg = err?.error?.error || 'No se pudo crear el insumo.';

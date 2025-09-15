@@ -1,9 +1,10 @@
 <!-- new-model.html (simplificado y legible) -->
+@if (modelo) {
 <div class="new-model">
 
   <!-- Título -->
   <h2>
-    Alta de modelo
+    Actualización de {{ modelo.nombre }}
   </h2>
 
   <!-- Alertas -->
@@ -27,8 +28,11 @@
       </div>
 
       <div class="field">
-        <label for="tipoMovimiento">Tipo de movimiento</label>
-        <input type="text" [value]="'Ingreso'" readonly class="readonly" />
+        <label>Tipo de movimiento</label>
+        <select [(ngModel)]="tipoMovimiento" name="tipoMovimiento">
+          <option value="ingreso">Ingreso</option>
+          <option value="egreso">Egreso</option>
+        </select>
       </div>
     </section>
 
@@ -66,3 +70,7 @@
 
   </form>
 </div>
+}
+@if (!modelo){
+    <p>Cargando...</p>
+}

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import {
   Insumo, InsumoMovimiento
 } from '../../interfaces/stock';
+import { environment } from '../../../../environment';
 
 @Injectable({ providedIn: 'root' })
 export class InsumosService {
@@ -10,7 +11,7 @@ export class InsumosService {
   patchPreciosInsumo(id: string | number, precios: { precio_costo?: string | number; precio_venta?: string | number }) {
     return this.http.patch<{ ok: boolean }>(`${this.API}/${id}/precios`, precios);
   }
-  private API = 'http://localhost:4000/insumos';
+  private readonly API = environment.stockApiBase + '/insumos';
   constructor(private http: HttpClient) {}
 
   // Obtener un solo insumo por id

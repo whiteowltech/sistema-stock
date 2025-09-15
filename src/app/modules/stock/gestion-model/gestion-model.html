@@ -63,8 +63,8 @@
         @for (group of itemsFA; track $index) {
           <div class="row" [formGroup]="group">
             <div class="label">
-              {{ group.value.tipo === 'con_borde' ? 'Módulo con borde' :
-                 group.value.tipo === 'sin_borde' ? 'Módulo sin borde' :
+              {{ group.value.tipo === 'con_borde' ? 'Módulo con marco' :
+                 group.value.tipo === 'sin_borde' ? 'Módulo sin marco' :
                  group.value.tipo === 'plaqueta_carga' ? 'Plaqueta de carga' : 'Tapa trasera' }}
             </div>
             <input type="number" min="0" formControlName="cantidad" placeholder="Cantidad" />

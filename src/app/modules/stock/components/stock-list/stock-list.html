@@ -67,7 +67,7 @@
                 <ul class="exp-items" style="margin-top:0.5em;">
                   @for (it of m.items; track it.categoria) {
                     <li>
-                      <strong>{{ it.categoria ? it.categoria : 'Cantidad' }}</strong>: x{{ it.cantidad }}
+                      <strong>{{ it.categoria ? (it.categoria | categoriaNombre) : 'Cantidad' }}</strong>: x{{ it.cantidad }}
                     </li>
                   }
                 </ul>

@@ -1,10 +1,11 @@
 {
   "name": "stock-app",
   "version": "0.0.0",
-  "description": "Sistema de Stock para escritorio",        
-  "author": "White Owl Tech",                               
+  "description": "Sistema de Stock para escritorio",
+  "author": "White Owl Tech",
   "main": "electron/main.js",
   "private": true,
+  "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -14,8 +15,11 @@
     "test": "ng test",
     "serve:ssr:stock-app": "node dist/stock-app/server/server.mjs",
     "build:electron": "ng build --base-href ./",
-    "electron": "ng build --base-href ./ &&  electron .",
-    "dist": "ng build --base-href ./ && electron-builder"
+    "electron": "ng build --base-href ./ && electron electron/main.js",
+    "dist": "ng build --base-href ./ && electron-builder",
+    "clean-build-dist": "powershell -Command Remove-Item -Recurse -Force ./dist; npm run build:electron; npx electron-rebuild; npm run dist"
+  ,
+  "postinstall": "electron-builder install-app-deps"
   },
   "prettier": {
     "overrides": [
@@ -36,43 +40,72 @@
     "@angular/platform-server": "^20.1.0",
     "@angular/router": "^20.1.0",
     "@angular/ssr": "^20.1.1",
-    "express": "^5.1.0",
+    "archiver": "^7.0.1",
+    "axios": "^1.11.0",
+    "better-sqlite3": "^12.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^4.21.2",
+    "express-fileupload": "^1.5.2",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.1",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "unzipper": "^0.12.3"
   },
   "devDependencies": {
     "@angular/build": "^20.1.1",
     "@angular/cli": "^20.1.1",
     "@angular/compiler-cli": "^20.1.0",
-    "@types/express": "^5.0.1",
+    "@types/archiver": "^6.0.3",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.3",
+    "@types/express-fileupload": "^1.5.1",
     "@types/jasmine": "~5.1.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
     "@types/node": "^20.17.19",
+    "@types/unzipper": "^0.10.11",
     "concurrently": "^9.2.0",
-    "electron": "^37.2.3",
+    "electron": "^37.4.0",
     "electron-builder": "^26.0.12",
+    "electron-rebuild": "^3.2.9",
     "jasmine-core": "~5.8.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
     "wait-on": "^8.0.3"
   },
-  "build": {
-    "appId": "com.whiteowltech.stockapp",
-    "productName": "StockApp",
-    "files": [
-      "dist/stock-app/browser/**/*",
-      "electron/**/*","package.json"    
-    ],
-    "directories": {
-      "buildResources": "assets"
-    },
-    "asar": true,
-    "win": {
-      "icon": "electron/icon.ico",
-      "target": "nsis"
-    }
-  }
+ "build": {
+  "appId": "com.whiteowltech.stockapp",
+  "productName": "StockApp",
+  "files": [
+    "dist/stock-app/browser/**/*",
+    "electron/main.*",
+    "electron/icon.ico",
+    "package.json"
+  ],
+  "extraResources": [
+  { "from": "electron/api/dist", "to": "electron/api/dist" },
+  { "from": "electron/api/dist/node_modules", "to": "electron/api/dist/node_modules" },
+  { "from": "electron/api/dist/package.json", "to": "electron/api/dist/package.json" },
+  { "from": "electron/api/dist/sql", "to": "electron/api/dist/sql" },
+  { "from": "dist/stock-app/browser", "to": "stock-app/browser" }
+  ],
+  "asar": true,
+  "asarUnpack": [
+    "**/*.node",                   
+    "**/better-sqlite3/**/*"       
+  ],
+  "directories": { "buildResources": "assets" },
+  "win": { "icon": "electron/icon.ico", "target": "nsis" }
+}
+
 }

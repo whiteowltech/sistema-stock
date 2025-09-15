@@ -45,6 +45,24 @@ export class ModelosList implements OnInit {
     this.insumoPreciosForm.set(form);
   }
 
+  async deleteModelo(id: string) {
+    // Confirmación visual moderna
+    const seguro = window.confirm('¿Seguro que quieres eliminar este modelo?\nEsta acción no se puede deshacer. * Se eliminarán sus movimientos asociados *');
+    if (!seguro) return;
+    // Opcional: feedback visual (deshabilitar botón, spinner, etc.)
+    try {
+      await firstValueFrom(this.stock.deleteModelo(id));
+      // Recargar modelos
+      const modelos = await firstValueFrom(this.stock.getModelos());
+      this.modelos.set(modelos);
+      // Feedback visual de éxito
+      setTimeout(() => {
+        alert('Modelo eliminado correctamente');
+      }, 100);
+    } catch (e: any) {
+      alert(e?.error?.error || 'Error al eliminar el modelo');
+    }
+  }
   async guardarInsumoPrecios() {
     const insumo = this.insumoEdit();
     if (!insumo) return;

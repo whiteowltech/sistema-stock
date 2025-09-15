@@ -1,169 +1,77 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
-import {
-  FormBuilder,
-  ReactiveFormsModule,
-  Validators,
-  FormArray,
-  FormGroup
-} from '@angular/forms';
-
+import { ChangeDetectorRef, Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { StockService } from '../../../core/services/stock';
-import { Modelo, Modulo, TipoModulo } from '../../../interfaces/stock';
-import { ActivatedRoute } from '@angular/router';
+import { Modelo } from '../../../interfaces/stock';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-new-model',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [FormsModule, CommonModule],
   templateUrl: './new-model.html',
   styleUrls: ['./new-model.scss'],
 })
-export class NewModelComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  submitted = false;
+export class NewModelComponent {
+  modelo: Modelo = {
+    id: '',
+    nombre: '',
+    comentario: '',
+    items: [
+      { id: '1', tipo: 'con_borde', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+      { id: '2', tipo: 'sin_borde', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+      { id: '3', tipo: 'plaqueta_carga', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+      { id: '4', tipo: 'tapa_trasera', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+    ],
+  };
+  tipoMovimiento: 'ingreso' | 'egreso' = 'ingreso';
   errorMsg = '';
   successMsg = '';
   saving = false;
-  private stock = inject(StockService);
-  private modelos: Modelo[] = [];
-  modelosSignal = signal<Modelo[]>([]);
 
+  constructor(private stock: StockService, private router: Router, private cdr: ChangeDetectorRef) {}
 
-  private fb = inject(FormBuilder);
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
-  }
-  form = this.fb.group({
-    id: [''],  // hidden field for edit mode
-    nombre: ['', [Validators.required, Validators.maxLength(80)]],
-    tipoOperacion: ['ingreso', Validators.required],
-    comentario: ['', Validators.maxLength(300)],
-    items: this.fb.array([
-      this.fb.group({
-        tipo: ['con_borde'],
-        cantidad: ['0'],
-        precio_costo: ['0'],
-        precio_venta: ['0'],
-      }),
-      this.fb.group({
-        tipo: ['sin_borde'],
-        cantidad: ['0'],
-        precio_costo: ['0'],
-        precio_venta: ['0'],
-      }),
-      this.fb.group({
-        tipo: ['plaqueta_carga'],
-        cantidad: ['0'],
-        precio_costo: ['0'],
-        precio_venta: ['0'],
-      }),
-      this.fb.group({
-        tipo: ['tapa_trasera'],
-        cantidad: ['0'],
-        precio_costo: ['0'],
-        precio_venta: ['0'],
-      }),
-    ]),
-  });
-  editMode = false;
-
-  async ngOnInit(): Promise<void> {
-    this.modelos = await firstValueFrom(this.stock.getModelos());
-    // Detectar si hay id en la ruta
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      const modelo = this.modelos.find(m => m.id === id);
-      if (modelo) {
-        this.editMode = true;
-        this.form.patchValue({
-          id: modelo.id,
-          nombre: modelo.nombre,
-          comentario: modelo.comentario ?? '',
-          tipoOperacion: 'ingreso', // o lo que corresponda
-        });
-        // Cargar los módulos en el FormArray asegurando el orden y sin repeticiones
-        const itemsFA = this.form.get('items') as import('@angular/forms').FormArray;
-        const tipos: TipoModulo[] = ['con_borde', 'sin_borde', 'plaqueta_carga', 'tapa_trasera'];
-        tipos.forEach((tipo, idx) => {
-          const item = modelo.items.find(i => i.tipo === tipo);
-          if (itemsFA.at(idx)) {
-            itemsFA.at(idx).patchValue({
-              tipo,
-              cantidad: item?.cantidad ?? '0',
-              precio_costo: item?.precio_costo ?? '0',
-              precio_venta: item?.precio_venta ?? '0',
-            });
-          }
-        });
-      }
-    }
-  }
-get itemsFA(): FormGroup[] {
-  return (this.form.get('items') as FormArray).controls as FormGroup[];
-}
-  onSubmit(): void {
-    this.submitted = true;
-    if (this.form.valid) {
-      this.saving = true;
-      // Armar el array items para el payload (sin id)
-      const items: any[] = (this.form.get('items')?.value as any[]).map(item => ({
-        tipo: item.tipo,
-        cantidad: String(item.cantidad ?? '0'),
-        precio_costo: String(item.precio_costo ?? '0'),
-        precio_venta: String(item.precio_venta ?? '0'),
-      }));
-      const payload = {
-        nombre: this.form.value.nombre ?? '',
-        comentario: this.form.value.comentario ?? '',
-        items,
-        tipoMovimiento: this.form.value.tipoOperacion,
-        comentarioMovimiento: this.form.value.comentario ?? '',
-        fechaMovimiento: new Date().toISOString()
-      };
-      const modeloEdit: Modelo = {
-        id: this.form.value.id ?? '',
-        nombre: this.form.value.nombre ?? '',
-        comentario: this.form.value.comentario ?? '',
-        items,
-      };
-      if (this.editMode) {
-        this.stock.updateModelo(modeloEdit).subscribe({
-          next: () => {
-            this.successMsg = 'Modelo actualizado correctamente';
-            this.saving = false;
-            this.form.reset();
-            this.submitted = false;
-            window.location.href = '/stock';
-          },
-          error: err => {
-            this.errorMsg = 'Error al actualizar el modelo';
-            this.saving = false;
-          }
-        });
-        console.log('Modelo actualizado:', modeloEdit);
-      } else {
-        this.stock.addModelo(payload).subscribe({
-          next: () => {
-            this.successMsg = 'Modelo creado correctamente';
-            this.saving = false;
-            this.form.reset();
-            this.submitted = false;
-            // window.location.href = '/stock';
-          },
-          error: err => {
-            this.errorMsg = 'Error al crear el modelo';
-            this.saving = false;
-          }
-        });
-        console.log('Modelo creado:', payload);
-      }
-    } else {
+  onSubmit() {
+    this.saving = true;
+    if (!this.modelo.nombre || this.modelo.nombre.length > 80) {
+      this.errorMsg = 'El nombre es obligatorio y debe tener menos de 80 caracteres.';
       this.saving = false;
+      return;
     }
+    for (const item of this.modelo.items) {
+      if (Number(item.cantidad) < 0) {
+        this.errorMsg = 'La cantidad debe ser mayor o igual a 0.';
+        this.saving = false;
+        return;
+      }
+    }
+    // Enviar tipoMovimiento junto con el modelo si el backend lo requiere
+    const payload = { ...this.modelo, tipoMovimiento: this.tipoMovimiento };
+    this.stock.addModelo(payload).subscribe({
+      next: () => {
+        this.successMsg = 'Modelo creado correctamente';
+        this.saving = false;
+        this.cleanForm();
+        // this.router.navigate(['/stock']);
+      },
+      error: () => {
+        this.errorMsg = 'Error al crear el modelo';
+        this.saving = false;
+      }
+    });
+  }
+  cleanForm() {
+    this.modelo = {
+      id: '',
+      nombre: '',
+      comentario: '',
+      items: [
+        { id: '1', tipo: 'con_borde', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+        { id: '2', tipo: 'sin_borde', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+        { id: '3', tipo: 'plaqueta_carga', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+        { id: '4', tipo: 'tapa_trasera', cantidad: '0', precio_costo: '0', precio_venta: '0' },
+      ],
+    };
+    this.cdr.detectChanges(); // Forzar actualización del template
   }
 }
-
-
-

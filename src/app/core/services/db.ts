@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environment';
 
 @Injectable({ providedIn: 'root' })
 export class DbService {
-  private readonly API = 'http://localhost:4000';
+ private readonly API = environment.stockApiBase
   constructor(private http: HttpClient) {}
 
   // Exportar base de datos (descargar archivo) usando HttpClient y ruta correcta

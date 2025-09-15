@@ -1,3 +1,30 @@
+// Botón eliminar personalizado
+.btn-delete {
+  background: linear-gradient(90deg, #fee2e2 0%, #fef2f2 100%);
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  min-width: 110px;
+  padding: .38rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.btn-delete:hover {
+  background: linear-gradient(90deg, #fecaca 0%, #fee2e2 100%);
+  color: #991b1b;
+  box-shadow: 0 2px 8px rgba(185, 28, 28, 0.13);
+  transform: translateY(-2px) scale(1.04);
+}
+.btn-delete .icon-trash {
+  margin-right: 4px;
+}
+.btn-delete .delete-text {
+  font-weight: 500;
+  font-size: .95em;
+  letter-spacing: .02em;
+}
 .modal-precios-bg {
   position: fixed ;
   top: 0;
@@ -119,7 +146,10 @@ tbody tr:hover{ background:#f3f7ff; }
 }
 .badge-low { background:#fee2e2; border-color:#fecaca; color:#991b1b; }
 
-.actions { text-align: right; }
+.actions { text-align: center;}
+.btn-delete{
+  width: 100%;
+}
 .todo
 {
     margin: 30px;

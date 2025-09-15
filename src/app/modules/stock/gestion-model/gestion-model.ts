@@ -105,8 +105,6 @@ export class GestionModelComponent implements OnInit {
         items: this.itemsFA.map(item => ({
           categoria: item.value.tipo,
           cantidad: String(item.value.cantidad),
-          precio_costo: String(item.value.precio_costo),
-          precio_venta: String(item.value.precio_venta),
         })),
       };
       this.stock.addMovimiento(modeloId, movimiento).subscribe({

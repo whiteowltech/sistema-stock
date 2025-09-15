@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Modelo, Movimiento } from '../../interfaces/stock';
-
+import { environment } from '../../../../environment';
 @Injectable({ providedIn: 'root' })
 export class StockService {
   // Editar precios de los módulos de un modelo
@@ -13,7 +13,9 @@ export class StockService {
   updateModelo(modelo: Modelo): Observable<Modelo> {
     return this.http.put<Modelo>(`${this.API}/${modelo.id}`, modelo);
   }
-  private readonly API = 'http://localhost:4000'; // Cambia la URL si tu API está en otro puerto/host
+  // private readonly API = '
+  // Llamar a env prod
+  private readonly API = environment.stockApiBase;
 
   constructor(private http: HttpClient) {}
 
@@ -42,7 +44,9 @@ export class StockService {
     return this.http.get<Movimiento[]>(`${this.API}/movimientos`);
   }
 
-
+  deleteModelo(id: string): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.API}/modelos/${id}`);
+  }
 
 
 }
