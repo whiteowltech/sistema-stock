@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {
-  Insumo, InsumoMovimiento
+  Insumo
 } from '../../interfaces/stock';
 import { environment } from '../../../../environment';
 import { Observable } from 'rxjs';

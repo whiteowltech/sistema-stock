@@ -4,7 +4,6 @@ import { StockHomeComponent } from './modules/stock/pages/stock-home/stock-home'
 import { NewModelComponent } from './modules/stock/new-model/new-model';
 import { ModelosList } from './modules/stock/modelos-list/modelos-list';
 import { NewInsumosComponent } from './modules/stock/components/new-insumos/new-insumos';
-import { GestionModelComponent } from './modules/stock/gestion-model/gestion-model';
 import { BlankComponent } from './shared/blank.component';
 import { UpdateModelComponent } from './modules/stock/update-model/update-model';
 

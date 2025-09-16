@@ -65,22 +65,22 @@ export class StockListComponent implements OnInit {
     const q = this.normalize(this.search());
     const f = this.filtro();
 
-    // 1) filtrar por tipo
     let data = this.allMovimientos().filter(m => f === 'todos' ? true : m.tipo === f);
 
-    // 2) búsqueda (modeloId, comentario, tipo, items.categoria)
-    if (q) {
-      data = data.filter(m => {
-        // Busca en modeloId, comentario, tipo y cada categoria de items
-        const campos = [
-          m.modeloId,
-          m.comentario ?? '',
-          m.tipo,
-          ...m.items.map(it => it.categoria)
-        ];
-        return campos.some(txt => this.normalize(String(txt)).includes(q));
-      });
-    }
+    // 2) búsqueda (nombre de modelo, comentario, tipo, items.categoria)
+    console.log('Búsqueda:', q);
+    console.log('Datos antes de buscar:', data);
+        if (q) {
+          data = data.filter(m => {
+            const campos = [
+              m.nombre ?? '',
+              m.comentario ?? '',
+              m.tipo,
+              ...m.items.map(it => it.categoria)
+            ];
+            return campos.some(txt => this.normalize(String(txt)).includes(q));
+          });
+        }
 
     // 3) ordenar por columna
     const dir = this.sortDir === 'asc' ? 1 : -1;
