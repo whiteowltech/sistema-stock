@@ -63,6 +63,32 @@ export class ModelosList implements OnInit {
       alert(e?.error?.error || 'Error al eliminar el modelo');
     }
   }
+
+   async deleteInsumo(id: number) {
+    // Confirmación visual moderna
+    const seguro = window.confirm('¿Seguro que quieres eliminar este insumo?\nEsta acción no se puede deshacer. * Se eliminarán sus movimientos asociados *');
+    if (!seguro) return;
+    // Opcional: feedback visual (deshabilitar botón, spinner, etc.)
+    try {
+      await firstValueFrom(this.ins.deleteInsumo(id));
+      // Recargar insumos
+      const insumos = await firstValueFrom(this.ins.getInsumos());
+      const rows = insumos.map(i => ({
+        id: i.id,
+        tipoInsumo: i.tipoInsumo,
+        cantidad: i.cantidad,
+        precio_costo: Number(i.precio_costo),
+        precio_venta: Number(i.precio_venta)
+      }));
+      this.insumos.set(rows);
+      // Feedback visual de éxito
+      setTimeout(() => {
+        alert('Insumo eliminado correctamente');
+      }, 100);
+    } catch (e: any) {
+      alert(e?.error?.error || 'Error al eliminar el insumo');
+    }
+  }
   async guardarInsumoPrecios() {
     const insumo = this.insumoEdit();
     if (!insumo) return;

@@ -4,9 +4,11 @@ import {
   Insumo, InsumoMovimiento
 } from '../../interfaces/stock';
 import { environment } from '../../../../environment';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class InsumosService {
+export class 
+InsumosService {
   // PATCH precios de un insumo
   patchPreciosInsumo(id: string | number, precios: { precio_costo?: string | number; precio_venta?: string | number }) {
     return this.http.patch<{ ok: boolean }>(`${this.API}/${id}/precios`, precios);
@@ -24,7 +26,9 @@ export class InsumosService {
   getInsumos() {
     return this.http.get<Insumo[]>(this.API);
   }
-
+  deleteInsumo(id: number): Observable<{ ok: boolean }> {
+    return this.http.delete<{ ok: boolean }>(`${this.API}/${id}`);
+  }
   // Crear un nuevo insumo con todos los campos que espera la API
   createInsumo(data: {
     tipoInsumo: string;
