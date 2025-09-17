@@ -28,7 +28,9 @@
         @for (m of filtered(); track m.id) {
         <tr>
           <td>
-            {{ m.nombre }}
+             <a class="btn tiny" [routerLink]="['/modelos/gestion', m.id]">
+              {{ m.nombre }}
+            </a>
           </td>
           <td>{{ moduloInfo(m, 'con_borde') }}</td>
           <td>{{ moduloInfo(m, 'sin_borde') }}</td>
@@ -86,7 +88,7 @@
           <tbody>
             @for (item of preciosForm(); track item.categoria; let idx = $index) {
             <tr>
-              <td>{{ item.categoria }}</td>
+              <td>{{ item.categoria | categoriaNombre }}</td>
               <td>
                 <input type="number" min="0" step="0.01" [value]="item.precio_costo"
                   (input)="onPrecioChange(idx, 'precio_costo', $any($event.target).value)" />

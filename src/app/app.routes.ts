@@ -8,13 +8,13 @@ import { BlankComponent } from './shared/blank.component';
 import { UpdateModelComponent } from './modules/stock/update-model/update-model';
 
 export const routes: Routes = [
-  { path: 'movimientos', component: StockHomeComponent, title: 'Inicio' },
+  { path: 'movimientos', component: StockHomeComponent, title: 'Movimientos' },
 
-  { path: 'stock', component: ModelosList, title: 'Modelos' },
+  { path: 'stock', component: ModelosList, title: 'Inicio' },
   { path: '', component: BlankComponent },
   { path: 'modelos/nuevo', component: NewModelComponent, title: 'Nuevo modelo' },
   { path: 'modelos/gestion/:id', component: UpdateModelComponent, title: 'Gestion modelo' },
-  { path: 'insumos/nuevo', component: NewInsumosComponent },
+  { path: 'insumos/nuevo', component: NewInsumosComponent, title: 'Nuevo insumo' },
   { path: 'insumos/gestion/:id', component: NewInsumosComponent, title: 'Gestion insumo' },
   { path: '', redirectTo: 'modelos', pathMatch: 'full' },
   { path: '**', redirectTo: 'stock' }, // 404 -> lista de modelos

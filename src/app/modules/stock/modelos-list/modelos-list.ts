@@ -8,11 +8,12 @@ import {
   TipoModulo,            // 'con_borde' | 'sin_borde'
 } from '../../../interfaces/stock';
 import { CommonModule } from '@angular/common';
+import { CategoriaNombrePipe } from '../pipes/categoria-nombre.pipe';
 
 @Component({
   selector: 'app-modelos-list',
   standalone: true,
-  imports: [RouterLink, CommonModule],
+  imports: [RouterLink, CommonModule,CategoriaNombrePipe],
   templateUrl: './modelos-list.html',
   styleUrls: ['./modelos-list.scss'],
 })
