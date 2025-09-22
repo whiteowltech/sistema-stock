@@ -92,6 +92,11 @@
 .btn.tiny .icon-cog {
   margin-right: 2px;
 }
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
 /* src/app/features/stock/modelos-list/modelos-list.component.scss */
 .header {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
@@ -156,10 +161,4 @@ tbody tr:hover{ background:#f3f7ff; }
 }
 .modelos-list{
    margin: 50px;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 30px;
 }

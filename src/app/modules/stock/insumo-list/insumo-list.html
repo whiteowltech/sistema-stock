@@ -1,0 +1,102 @@
+<div class="modelos-list">
+  <app-toast-notifications></app-toast-notifications>
+  <div class="header" style="margin-top: 28px;">
+    <div class="header-left">
+      <h2>Insumos</h2>
+  <app-low-stock-bell></app-low-stock-bell>
+    </div>
+    <div class="actions-right">
+      <input type="search" class="search" placeholder="Buscar insumo…" (input)="onSearch($any($event.target).value)">
+      <a class="btn primary" routerLink="/insumos/nuevo">Gestionar Insumo</a>
+    </div>
+  </div>
+  <!-- INSUMOS GLOBALES -->
+  @if (insLoading()) {
+  <div class="hint">Cargando insumos…</div>
+  } @else if (!insumos().length) {
+  <div class="hint">Aún no hay insumos definidos.</div>
+  } @else {
+  <div class="tabla-wrapper">
+    <table class="tabla-modulos">
+      <thead>
+        <tr>
+          <th>Insumo</th>
+          <th style="text-align:right">Cantidad</th>
+          <th style="text-align:right">Precio Costo</th>
+          <th style="text-align:right">Precio Venta</th>
+          <th style="width:80px"></th>
+        </tr>
+      </thead>
+      <tbody>
+  @for (insumo of filtered(); track insumo.id) {
+        <tr>
+          <td>{{ insumo.tipoInsumo }}</td>
+          <td style="text-align:right">{{ insumo.cantidad }}</td>
+          <td style="text-align:right">$ {{ insumo.precio_costo }}</td>
+          <td style="text-align:right">$ {{ insumo.precio_venta }}</td>
+          <td class="actions">
+            <button class="btn tiny" (click)="openInsumoPreciosModal(insumo)">
+              <span class="icon-pencil"></span>Editar precios
+            </button>
+            <hr>
+            <a class="btn tiny" [routerLink]="['/insumos/gestion', insumo.id]">Gestionar</a>
+            <hr>
+            <button class="btn tiny btn-delete" (click)="deleteInsumo(insumo.id)" title="Eliminar insumo">
+              <span class="icon-trash" aria-label="Eliminar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </span>
+                <!-- <span class="delete-text">Eliminar</span> -->
+              </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+
+  <!-- Modal edición de precios de insumo fuera del div principal -->
+  @if (showInsumoPreciosModal()) {
+  <div class="modal-precios-bg">
+    <div class="modal-precios">
+      <h3>Editar precios de insumo</h3>
+      <form (submit)="guardarInsumoPrecios(); $event.preventDefault()">
+        <table style="width:100%;margin-bottom:16px;">
+          <thead>
+            <tr>
+              <th>Precio costo</th>
+              <th>Precio venta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <input type="number" min="0" step="0.01" [value]="insumoPreciosForm().precio_costo"
+                  (input)="onInsumoPrecioChange('precio_costo', $any($event.target).value)" />
+              </td>
+              <td>
+                <input type="number" min="0" step="0.01" [value]="insumoPreciosForm().precio_venta"
+                  (input)="onInsumoPrecioChange('precio_venta', $any($event.target).value)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        @if (insumoPreciosMsg()) {
+        <div class="alert error">{{ insumoPreciosMsg() }}</div>
+        }
+        <div style="display:flex;gap:12px;justify-content:flex-end;">
+          <button type="button" class="btn" (click)="closeInsumoPreciosModal()">Cancelar</button>
+          <button type="submit" class="btn primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  }
+  }
+</div>

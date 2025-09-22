@@ -8,21 +8,19 @@ import {
   TipoModulo,            // 'con_borde' | 'sin_borde'
 } from '../../../interfaces/stock';
 import { CommonModule } from '@angular/common';
-import { CategoriaNombrePipe } from '../pipes/categoria-nombre.pipe';
-import { LowStockBellComponent } from '../../../shared/low-stock-bell.component';
-import { checkLowStock, getLowStockNotificationsEnabled } from '../../../shared/low-stock-check';
-import { LowStockStateService } from '../../../core/services/low-stock-state.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { LowStockStateService } from '../../../core/services/low-stock-state.service';
+import { checkLowStock, getLowStockNotificationsEnabled } from '../../../shared/low-stock-check';
+import { LowStockBellComponent } from '../../../shared/low-stock-bell.component';
 import { ToastNotificationsComponent } from '../../../shared/toast-notifications.component';
-
 @Component({
   selector: 'app-modelos-list',
   standalone: true,
-  imports: [RouterLink, CommonModule, CategoriaNombrePipe, ToastNotificationsComponent, LowStockBellComponent],
-  templateUrl: './modelos-list.html',
-  styleUrls: ['./modelos-list.scss'],
+  imports: [RouterLink, CommonModule, ToastNotificationsComponent, LowStockBellComponent],
+  templateUrl: './insumo-list.html',
+  styleUrls: ['./insumo-list.scss'],
 })
-export class ModelosList implements OnInit {
+export class InsumoList implements OnInit {
   private notification: NotificationService;
   private lowStockState: LowStockStateService;
   // --- Modal edición precios insumo ---
@@ -191,8 +189,16 @@ export class ModelosList implements OnInit {
 
   filtered = computed(() => {
     const term = this.search();
-    if (!term) return this.modelos();
-    return this.modelos().filter(m => this.norm(m.nombre).includes(term));
+    if (!term) return this.insumos();
+    return this.insumos().filter(i => {
+      const campos = [
+        i.tipoInsumo,
+        String(i.cantidad),
+        String(i.precio_costo),
+        String(i.precio_venta)
+      ];
+      return campos.some(txt => this.norm(txt).includes(term));
+    });
   });
 
   // ---------- Insumos (stock global) ----------
@@ -203,9 +209,9 @@ export class ModelosList implements OnInit {
   async ngOnInit(): Promise<void> {
     // Modelos
     const modelos = await firstValueFrom(this.stock.getModelos());
-  this.modelos.set(modelos);
-  checkLowStock(modelos, this.notification, this.lowStockState, getLowStockNotificationsEnabled());
-  this.loading.set(false);
+    this.modelos.set(modelos);
+    this.loading.set(false);
+
 
     // Insumos (API)
     try {
@@ -219,8 +225,9 @@ export class ModelosList implements OnInit {
       }));
       console.log('Insumos cargados:', rows);
       this.insumos.set(rows);
-      // Notificación de stock bajo
-      
+
+  // Notificación de stock bajo (centralizada)
+  checkLowStock(rows, this.notification, this.lowStockState, getLowStockNotificationsEnabled());
     } catch (e) {
       this.insumos.set([]);
     } finally {

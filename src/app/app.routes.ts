@@ -6,11 +6,13 @@ import { ModelosList } from './modules/stock/modelos-list/modelos-list';
 import { NewInsumosComponent } from './modules/stock/components/new-insumos/new-insumos';
 import { BlankComponent } from './shared/blank.component';
 import { UpdateModelComponent } from './modules/stock/update-model/update-model';
+import { InsumoList } from './modules/stock/insumo-list/insumo-list';
 
 export const routes: Routes = [
   { path: 'movimientos', component: StockHomeComponent, title: 'Movimientos' },
 
-  { path: 'stock', component: ModelosList, title: 'Inicio' },
+  { path: 'modelos', component: ModelosList, title: 'Inicio' },
+  { path: 'insumos', component: InsumoList, title: 'Insumos' },
   { path: '', component: BlankComponent },
   { path: 'modelos/nuevo', component: NewModelComponent, title: 'Nuevo modelo' },
   { path: 'modelos/gestion/:id', component: UpdateModelComponent, title: 'Gestion modelo' },

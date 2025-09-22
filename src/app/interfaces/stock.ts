@@ -49,10 +49,10 @@ export interface Movimiento {
 
 export interface Insumo {
   id: number;
-  tipoInsumo: string;
+  tipoInsumo: string | any;
   cantidad: number;
-  precio_costo: string; // precio de costo
-  precio_venta: string;  // precio de venta
+  precio_costo: string | any; // precio de costo
+  precio_venta: string | any;  // precio de venta
 }
 
 export type TipoMovimientoInsumo = 'ingreso' | 'egreso';
