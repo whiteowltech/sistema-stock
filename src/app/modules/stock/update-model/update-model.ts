@@ -70,10 +70,9 @@ export class UpdateModelComponent implements OnInit {
         this.successMsg = 'Modelo actualizado correctamente';
         this.saving = false;
         this.cleanForm();
-        this.router.navigate(['/stock']);
+        this.router.navigate(['/modelos']);
       },
       error: (e) => {
-        console.log('Error response:', e.error.error);
         this.errorMsg = e.error.error;
         this.saving = false;
         this.forceUpdate();

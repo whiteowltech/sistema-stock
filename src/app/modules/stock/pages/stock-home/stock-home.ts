@@ -12,7 +12,10 @@ import { Movimiento } from '../../../../interfaces/stock';
   templateUrl: './stock-home.html',
 })
 export class StockHomeComponent implements OnInit {
-  private stock = inject(StockService);
+  private stock: StockService;
+  constructor() {
+    this.stock = inject(StockService);
+  }
   movimientos: Movimiento[] = [];
 
   async ngOnInit(): Promise<void> {

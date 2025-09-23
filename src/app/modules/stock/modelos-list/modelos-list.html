@@ -3,7 +3,9 @@
   <div class="header">
     <div class="header-left">
       <h2>Modelos</h2>
-  <app-low-stock-bell></app-low-stock-bell>
+      <div>
+        <app-low-stock-bell></app-low-stock-bell>
+      </div>
     </div>
     <div class="actions-right">
 
@@ -33,7 +35,7 @@
         @for (m of filtered(); track m.id) {
         <tr>
           <td>
-             <a class="btn tiny" [routerLink]="['/modelos/gestion', m.id]">
+            <a class="btn tiny" [routerLink]="['/modelos/gestion', m.id]">
               {{ m.nombre }}
             </a>
           </td>
@@ -49,21 +51,21 @@
             <a class="btn tiny" [routerLink]="['/modelos/gestion', m.id]">
               <span class="icon-cog"></span>Gestionar
             </a>
-              <hr>
+            <hr>
 
-              <button class="btn tiny btn-delete" (click)="deleteModelo(m.id)" title="Eliminar modelo">
-                <span class="icon-trash" aria-label="Eliminar">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
-                    <line x1="10" y1="11" x2="10" y2="17"></line>
-                    <line x1="14" y1="11" x2="14" y2="17"></line>
-                  </svg>
-                </span>
-                <!-- <span class="delete-text">Eliminar</span> -->
-              </button>
-    
+            <button class="btn tiny btn-delete" (click)="deleteModelo(m.id)" title="Eliminar modelo">
+              <span class="icon-trash" aria-label="Eliminar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m5 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </span>
+              <!-- <span class="delete-text">Eliminar</span> -->
+            </button>
+
 
           </td>
         </tr>

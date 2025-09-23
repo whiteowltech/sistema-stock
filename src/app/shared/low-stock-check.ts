@@ -25,23 +25,26 @@ function categoriaNombre(tipo: string | null | undefined): string {
 }
 
 
+
 export function checkLowStock(
   data: Insumo[] | Modelo[],
   notification: NotificationService,
   lowStockState: LowStockStateService,
   enabled: boolean = true
 ) {
-  if (!enabled) return;
+  lowStockState.clear();
   const lowStock: LowStockResource[] = [];
   // Si es array de insumos
   if (data.length && 'tipoInsumo' in data[0]) {
     (data as Insumo[]).forEach(i => {
       if (i.cantidad < 5) {
-        notification.notify({
-          message: `¡Atención! El insumo "${i.tipoInsumo}" está bajo de stock (${i.cantidad})`,
-          type: 'warning',
-          sound: true
-        });
+        if (enabled) {
+          notification.notify({
+            message: `¡Atención! El insumo "${i.tipoInsumo}" está bajo de stock (${i.cantidad})`,
+            type: 'warning',
+            sound: true
+          });
+        }
         lowStock.push({ id: i.id, label: i.tipoInsumo, cantidad: i.cantidad, tipo: i.tipoInsumo });
       }
     });
@@ -53,11 +56,13 @@ export function checkLowStock(
     (data as Modelo[]).forEach(modelo => {
       modelo.items.forEach(i => {
         if (Number(i.cantidad) < 5) {
-          notification.notify({
-            message: `¡Atención! El recurso "${modelo.nombre}" (${categoriaNombre(i.tipo)}) está bajo de stock (${i.cantidad})`,
-            type: 'warning',
-            sound: true
-          });
+          if (enabled) {
+            notification.notify({
+              message: `¡Atención! El recurso "${modelo.nombre}" (${categoriaNombre(i.tipo)}) está bajo de stock (${i.cantidad})`,
+              type: 'warning',
+              sound: true
+            });
+          }
           lowStock.push({ id: i.id, label: categoriaNombre(i.tipo), cantidad: Number(i.cantidad), tipo: i.tipo, modelo: modelo.nombre });
         }
       });

@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
       type="button"
       (click)="toggle()"
       [title]="enabled() ? 'Desactivar notificaciones de stock bajo' : 'Activar notificaciones de stock bajo'"
-      style="background:none;border:none;outline:none;cursor:pointer;padding:0; margin-top:5px;display:flex;align-items:center;"
+      style="background:none;border:none;outline:none;cursor:pointer;padding:0; margin:0;"
     >
       <ng-container *ngIf="enabled(); else bellOff">
           <!-- Campana normal (Material Icons style) -->

@@ -13,7 +13,11 @@ import { CommonModule } from '@angular/common';
 })
 export class DbModalComponent {
   @Output() closeModal = new EventEmitter<void>();
-  private db = inject(DbService);
+  private db: DbService;
+  constructor() {
+    this.db = inject(DbService);
+  }
+  
   // showDbModal se maneja desde el componente principal
   mode = signal<'export' | 'import'>('export');
   errorMsg = signal('');
@@ -21,7 +25,6 @@ export class DbModalComponent {
   file: File | null = null;
 
   ngOnInit() {
-    console.log('Modal de base de datos abierto');
   }
   close() {
   this.errorMsg.set('');

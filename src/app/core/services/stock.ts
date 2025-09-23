@@ -21,7 +21,6 @@ export class StockService {
 
   // Registrar movimiento para un modelo
   addMovimiento(modeloId: string, movimiento: any): Observable<any> {
-    console.log('Payload movimiento:', movimiento);
     return this.http.post<any>(`${this.API}/modelos/${modeloId}/movimiento`, movimiento);
   }
   // Listar todos los modelos

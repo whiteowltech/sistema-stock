@@ -18,7 +18,6 @@ InsumosService {
 
   // Obtener un solo insumo por id
   getInsumo(id: any) {
-    console.log('Fetching insumo with ID:', id);
     return this.http.get<Insumo>(`${this.API}/${id}`);
   }
 
@@ -38,7 +37,6 @@ InsumosService {
     tipo: 'ingreso' | 'egreso';
     comentario?: string;
   }) {
-    console.log('Creating insumo with data:', data);
     return this.http.post<Insumo>(`${this.API}`, data);
   }
 

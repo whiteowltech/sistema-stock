@@ -47,7 +47,6 @@ export class NewModelComponent {
     }
     // Enviar tipoMovimiento junto con el modelo si el backend lo requiere
     const payload = { ...this.modelo, tipoMovimiento: this.tipoMovimiento };
-    console.log('Payload to submit:', payload);
     this.stock.addModelo(payload).subscribe({
       next: () => {
         this.successMsg = 'Modelo creado correctamente';

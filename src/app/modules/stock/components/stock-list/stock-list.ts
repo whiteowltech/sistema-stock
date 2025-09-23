@@ -36,9 +36,12 @@ export class StockListComponent implements OnInit {
     return items.map(it => `${it.categoria} x${it.cantidad}`).join(', ');
   }
   @Input() movimientos: Movimiento[] = [];
-
+  private stock: StockService;
   // ==== inyección de servicio ====
-  private stock = inject(StockService);
+  constructor() {
+    this.stock = inject(StockService);
+  }
+  
 
   // ==== estado ====
   loading = signal<boolean>(false);
@@ -68,8 +71,6 @@ export class StockListComponent implements OnInit {
     let data = this.allMovimientos().filter(m => f === 'todos' ? true : m.tipo === f);
 
     // 2) búsqueda (nombre de modelo, comentario, tipo, items.categoria)
-    console.log('Búsqueda:', q);
-    console.log('Datos antes de buscar:', data);
         if (q) {
           data = data.filter(m => {
             const campos = [
@@ -214,7 +215,6 @@ export class StockListComponent implements OnInit {
       }
 
       this.allMovimientos.set(Array.isArray(data) ? data : []);
-      console.log('Movimientos cargados:', data);
       this.goTo(1); // recalcular página por si cambió el total
     } catch (e) {
       console.error('Error cargando movimientos:', e);

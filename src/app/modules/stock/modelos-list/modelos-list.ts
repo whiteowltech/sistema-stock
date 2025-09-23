@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, effect } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { StockService } from '../../../core/services/stock';
@@ -25,10 +25,14 @@ import { ToastNotificationsComponent } from '../../../shared/toast-notifications
 export class ModelosList implements OnInit {
   private notification: NotificationService;
   private lowStockState: LowStockStateService;
+  private stock: StockService;
+  private ins: InsumosService;
   // --- Modal edición precios insumo ---
   constructor() {
-    this.notification = inject(NotificationService);
-    this.lowStockState = inject(LowStockStateService);
+  this.notification = inject(NotificationService);
+  this.lowStockState = inject(LowStockStateService);
+  this.stock = inject(StockService);
+  this.ins = inject(InsumosService);
   }
   showInsumoPreciosModal = signal(false);
   insumoEdit = signal<{ id: number; tipoInsumo: string; cantidad: number; precio_costo: number | string; precio_venta: number | string } | null>(null);
@@ -76,7 +80,7 @@ export class ModelosList implements OnInit {
     }
   }
 
-   async deleteInsumo(id: number) {
+  async deleteInsumo(id: number) {
     // Confirmación visual moderna
     const seguro = window.confirm('¿Seguro que quieres eliminar este insumo?\nEsta acción no se puede deshacer. * Se eliminarán sus movimientos asociados *');
     if (!seguro) return;
@@ -171,8 +175,6 @@ export class ModelosList implements OnInit {
     if (!item) return '0';
     return `${item.cantidad} / $${item.precio_costo} / $${item.precio_venta}`;
   }
-  private stock = inject(StockService);
-  private ins   = inject(InsumosService);
 
   // ---------- Modelos ----------
   modelos = signal<Modelo[]>([]);
@@ -203,30 +205,16 @@ export class ModelosList implements OnInit {
   async ngOnInit(): Promise<void> {
     // Modelos
     const modelos = await firstValueFrom(this.stock.getModelos());
-  this.modelos.set(modelos);
-  checkLowStock(modelos, this.notification, this.lowStockState, getLowStockNotificationsEnabled());
-  this.loading.set(false);
-
-    // Insumos (API)
-    try {
-      const catalogo = await firstValueFrom(this.ins.getInsumos());
-      const rows = catalogo.map(i => ({
-        id: i.id,
-        tipoInsumo: i.tipoInsumo,
-        cantidad: i.cantidad,
-        precio_costo: Number(i.precio_costo),
-        precio_venta: Number(i.precio_venta)
-      }));
-      console.log('Insumos cargados:', rows);
-      this.insumos.set(rows);
-      // Notificación de stock bajo
-      
-    } catch (e) {
-      this.insumos.set([]);
-    } finally {
-      this.insLoading.set(false);
-    }
+    this.modelos.set(modelos);
+    this.loading.set(false);
+    // Chequeo inicial
+    // checkLowStock(this.modelos(), this.notification, this.lowStockState, getLowStockNotificationsEnabled());
   }
+
+  // Efecto reactivo para cambios futuros (declarado como propiedad de clase)
+  private lowStockEffect = effect(() => {
+    checkLowStock(this.modelos(), this.notification, this.lowStockState, getLowStockNotificationsEnabled());
+  });
 
 
   

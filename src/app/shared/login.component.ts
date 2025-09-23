@@ -39,7 +39,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
   `]
 })
 export class LoginComponent {
-  router = inject(Router);
+  public router: Router;
   form: FormGroup;
   error = false;
 
@@ -47,8 +47,8 @@ export class LoginComponent {
   licenseForm: FormGroup;
   licenseActual: string | null = null;
 
-
   constructor(private fb: FormBuilder) {
+    this.router = inject(Router);
     this.form = this.fb.group({
       usuario: ['', Validators.required],
       contrasena: ['', Validators.required],

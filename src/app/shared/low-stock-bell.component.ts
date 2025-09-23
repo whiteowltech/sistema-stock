@@ -37,7 +37,10 @@ import { LowStockModalComponent } from './low-stock-modal.component';
   `]
 })
 export class LowStockBellComponent {
-  private state = inject(LowStockStateService);
+  private state : LowStockStateService;
+  constructor() {
+    this.state = inject(LowStockStateService);
+  }
   count = computed(() => this.state.lowStockResources().length);
   hasAlerts = computed(() => this.count() > 0);
   modalOpen = LowStockModalComponent.visible;

@@ -97,6 +97,9 @@
   align-items: center;
   gap: 30px;
 }
+.header-left div {
+  margin-top: 10px;
+}
 /* src/app/features/stock/modelos-list/modelos-list.component.scss */
 .header {
   display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;

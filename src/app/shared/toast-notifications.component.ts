@@ -23,7 +23,6 @@ export class ToastNotificationsComponent implements OnDestroy {
 
   constructor(private notify: NotificationService, private cdr: ChangeDetectorRef) {
     this.sub = this.notify.notifications.subscribe(n => {
-      console.log('[Toast] Notificación recibida:', n);
       this.notifications.push(n);
       // Limitar a máximo 5 toasts visibles
       if (this.notifications.length > 5) {

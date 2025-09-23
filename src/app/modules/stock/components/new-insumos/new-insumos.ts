@@ -18,23 +18,29 @@ export class NewInsumosComponent implements OnInit {
   successMsg: string = '';
   submitted = false;
   isGestionar = true; // Nueva variable para controlar el modo gestionar
-  private fb = inject(FormBuilder);
-  private insumosSrv = inject(InsumosService);
-  private route = inject(ActivatedRoute);
+  private fb: FormBuilder;
+  private insumosSrv: InsumosService;
+  private route: ActivatedRoute;
+  form: any;
+  constructor() {
+    this.fb = inject(FormBuilder);
+    this.insumosSrv = inject(InsumosService);
+    this.route = inject(ActivatedRoute);
+    this.form = this.fb.group({
+      tipo: ['ingreso'],
+      nombre: [''],
+      cantidad: [1],
+      comentario: [''],
+      precio_costo: [''],
+      precio_venta: ['']
+    });
+  }
 
-  form = this.fb.group({
-    tipo: ['ingreso'],
-    nombre: [''],
-    cantidad: [1],
-    comentario: [''],
-    precio_costo: [''],
-    precio_venta: ['']
-  });
+
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
     const id = idParam ? idParam : null; // No usar Number si es string/uuid
-    console.log('Insumo ID from route:', id);
     if (id) {
       this.insumosSrv.getInsumo(id).subscribe({
         next: (insumo) => {
@@ -119,7 +125,6 @@ export class NewInsumosComponent implements OnInit {
           tipo: (raw.tipo ?? 'ingreso') as 'ingreso' | 'egreso',
           comentario: raw.comentario ?? ''
         };  
-        console.log('Updating insumo with ID:', Number(id));
         this.insumosSrv.addMovimientoInsumo(id, updatedInsumo).subscribe({
           next: () => {
             this.form.reset({ tipo: 'ingreso', nombre: '', cantidad: 1, comentario: '' });

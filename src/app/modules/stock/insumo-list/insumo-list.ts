@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, effect } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { StockService } from '../../../core/services/stock';
@@ -23,10 +23,14 @@ import { ToastNotificationsComponent } from '../../../shared/toast-notifications
 export class InsumoList implements OnInit {
   private notification: NotificationService;
   private lowStockState: LowStockStateService;
+  private stock: StockService;
+  private ins: InsumosService;
   // --- Modal edición precios insumo ---
   constructor() {
     this.notification = inject(NotificationService);
     this.lowStockState = inject(LowStockStateService);
+    this.stock = inject(StockService);
+    this.ins = inject(InsumosService);
   }
   showInsumoPreciosModal = signal(false);
   insumoEdit = signal<{ id: number; tipoInsumo: string; cantidad: number; precio_costo: number | string; precio_venta: number | string } | null>(null);
@@ -74,7 +78,7 @@ export class InsumoList implements OnInit {
     }
   }
 
-   async deleteInsumo(id: number) {
+  async deleteInsumo(id: number) {
     // Confirmación visual moderna
     const seguro = window.confirm('¿Seguro que quieres eliminar este insumo?\nEsta acción no se puede deshacer. * Se eliminarán sus movimientos asociados *');
     if (!seguro) return;
@@ -91,6 +95,8 @@ export class InsumoList implements OnInit {
         precio_venta: Number(i.precio_venta)
       }));
       this.insumos.set(rows);
+      // Actualizar notificaciones de bajo stock
+      checkLowStock(rows, this.notification, this.lowStockState, getLowStockNotificationsEnabled());
       // Feedback visual de éxito
       setTimeout(() => {
         alert('Insumo eliminado correctamente');
@@ -149,28 +155,12 @@ export class InsumoList implements OnInit {
     this.preciosForm.set(arr);
   }
 
-  async guardarPrecios() {
-    const modelo = this.modeloEdit();
-    if (!modelo) return;
-    try {
-      await firstValueFrom(this.stock.patchPreciosModelo(modelo.id, this.preciosForm()));
-      this.preciosMsg.set('Precios actualizados correctamente');
-      this.showPreciosModal.set(false);
-      // Opcional: recargar modelos
-      const modelos = await firstValueFrom(this.stock.getModelos());
-      this.modelos.set(modelos);
-    } catch (e: any) {
-      this.preciosMsg.set(e?.error?.error || 'Error al actualizar precios');
-    }
-  }
   // Devuelve cantidad, precio_costo y precio_venta para un tipo de módulo
   moduloInfo(modelo: Modelo, tipo: TipoModulo): string {
     const item = modelo.items.find(i => i.tipo === tipo);
     if (!item) return '0';
     return `${item.cantidad} / $${item.precio_costo} / $${item.precio_venta}`;
   }
-  private stock = inject(StockService);
-  private ins   = inject(InsumosService);
 
   // ---------- Modelos ----------
   modelos = signal<Modelo[]>([]);
@@ -207,12 +197,6 @@ export class InsumoList implements OnInit {
   insumos = signal<{ id: number; tipoInsumo: string; cantidad: number; precio_costo: number; precio_venta: number }[]>([]);
 
   async ngOnInit(): Promise<void> {
-    // Modelos
-    const modelos = await firstValueFrom(this.stock.getModelos());
-    this.modelos.set(modelos);
-    this.loading.set(false);
-
-
     // Insumos (API)
     try {
       const catalogo = await firstValueFrom(this.ins.getInsumos());
@@ -223,18 +207,20 @@ export class InsumoList implements OnInit {
         precio_costo: Number(i.precio_costo),
         precio_venta: Number(i.precio_venta)
       }));
-      console.log('Insumos cargados:', rows);
       this.insumos.set(rows);
-
-  // Notificación de stock bajo (centralizada)
-  checkLowStock(rows, this.notification, this.lowStockState, getLowStockNotificationsEnabled());
     } catch (e) {
       this.insumos.set([]);
     } finally {
       this.insLoading.set(false);
     }
+    // checkLowStock(this.insumos(), this.notification, this.lowStockState, getLowStockNotificationsEnabled());
   }
 
+  // Efecto reactivo: cada vez que cambian los insumos, se chequea bajo stock (propiedad de clase)
+  private lowStockEffect = effect(() => {
+    checkLowStock(this.insumos(), this.notification, this.lowStockState, getLowStockNotificationsEnabled());
+  });
 
-  
+
+
 }

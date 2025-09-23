@@ -13,12 +13,14 @@ import { LoginComponent } from './shared/login.component';
 })
 export class App {
   title = signal('stock-app');
+  public router: Router;
   public showDbModal = false;
   get logueado() {
     return localStorage.getItem('logueado') === '1';
   }
-
-  public router = inject(Router);
+  constructor() {
+    this.router = inject(Router);
+  }
   logout() {
     localStorage.removeItem('logueado');
     this.router.navigate(['/login']);
