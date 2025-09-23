@@ -52,6 +52,12 @@
             Comentario
             @if (sortKey==='comentario') { <span class="dir">({{sortDir}})</span> }
           </th>
+          @if (hayEgresosVisibles) {
+            <th>Remito</th>
+          }
+          @else {
+            <th></th>
+          }
         </tr>
       </thead>
 
@@ -81,9 +87,16 @@
               }
             </td>
             <td>{{ m.comentario }}</td>
+            @if (m.tipo === 'egreso' && hayEgresosVisibles) {
+              <td>
+                <app-remito-pdf [remitoData]="getRemitoData(m)"></app-remito-pdf>
+              </td>
+            } @else {
+              <td></td>
+            }
           </tr>
         } @empty {
-          <tr><td colspan="4" class="muted">Sin resultados</td></tr>
+          <tr><td colspan="5" class="muted">Sin resultados</td></tr>
         }
       </tbody>
     </table>

@@ -17,9 +17,8 @@
     "build:electron": "ng build --base-href ./",
     "electron": "ng build --base-href ./ && electron electron/main.js",
     "dist": "ng build --base-href ./ && electron-builder",
-    "clean-build-dist": "powershell -Command Remove-Item -Recurse -Force ./dist; npm run build:electron; npx electron-rebuild; npm run dist"
-  ,
-  "postinstall": "electron-builder install-app-deps"
+    "clean-build-dist": "powershell -Command Remove-Item -Recurse -Force ./dist; npm run build:electron; npx electron-rebuild; npm run dist",
+    "postinstall": "electron-builder install-app-deps"
   },
   "prettier": {
     "overrides": [
@@ -50,6 +49,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.1",
+    "pdfmake": "^0.2.20",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "unzipper": "^0.12.3"
@@ -68,6 +68,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/node": "^20.17.19",
+    "@types/pdfmake": "^0.2.11",
     "@types/unzipper": "^0.10.11",
     "concurrently": "^9.2.0",
     "electron": "^37.4.0",
@@ -83,29 +84,48 @@
     "typescript": "^5.9.2",
     "wait-on": "^8.0.3"
   },
- "build": {
-  "appId": "com.whiteowltech.stockapp",
-  "productName": "StockApp",
-  "files": [
-    "dist/stock-app/browser/**/*",
-    "electron/main.*",
-    "electron/icon.ico",
-    "package.json"
-  ],
-  "extraResources": [
-  { "from": "electron/api/dist", "to": "electron/api/dist" },
-  { "from": "electron/api/dist/node_modules", "to": "electron/api/dist/node_modules" },
-  { "from": "electron/api/dist/package.json", "to": "electron/api/dist/package.json" },
-  { "from": "electron/api/dist/sql", "to": "electron/api/dist/sql" },
-  { "from": "dist/stock-app/browser", "to": "stock-app/browser" }
-  ],
-  "asar": true,
-  "asarUnpack": [
-    "**/*.node",                   
-    "**/better-sqlite3/**/*"       
-  ],
-  "directories": { "buildResources": "assets" },
-  "win": { "icon": "electron/icon.ico", "target": "nsis" }
-}
-
+  "build": {
+    "appId": "com.whiteowltech.stockapp",
+    "productName": "StockApp",
+    "files": [
+      "dist/stock-app/browser/**/*",
+      "electron/main.*",
+      "electron/icon.ico",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/api/dist",
+        "to": "electron/api/dist"
+      },
+      {
+        "from": "electron/api/dist/node_modules",
+        "to": "electron/api/dist/node_modules"
+      },
+      {
+        "from": "electron/api/dist/package.json",
+        "to": "electron/api/dist/package.json"
+      },
+      {
+        "from": "electron/api/dist/sql",
+        "to": "electron/api/dist/sql"
+      },
+      {
+        "from": "dist/stock-app/browser",
+        "to": "stock-app/browser"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/*.node",
+      "**/better-sqlite3/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "icon": "electron/icon.ico",
+      "target": "nsis"
+    }
+  }
 }

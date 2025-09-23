@@ -1,3 +1,4 @@
+
 import { Input } from '@angular/core';
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
@@ -7,6 +8,7 @@ import { Movimiento } from '../../../../interfaces/stock';
 import { Modelo } from '../../../../interfaces/stock';
 import { TipoModulo } from '../../../../interfaces/stock';
 import { CategoriaNombrePipe } from '../../pipes/categoria-nombre.pipe';
+import { RemitoPdfComponent } from '../../../../shared/remito-pdf.component';
 
 // Tipos alineados con tu API
 export type TipoMovimiento = 'ingreso' | 'egreso';
@@ -15,7 +17,7 @@ export type TipoMovimiento = 'ingreso' | 'egreso';
   selector: 'app-stock-list',
   templateUrl: './stock-list.html',
   styleUrls: ['./stock-list.scss'],
-  imports: [DatePipe, CategoriaNombrePipe],
+  imports: [DatePipe, CategoriaNombrePipe, RemitoPdfComponent],
 })
 export class StockListComponent implements OnInit {
   expanded: Record<string, boolean> = {};
@@ -34,6 +36,9 @@ export class StockListComponent implements OnInit {
   itemsResumen(items: { categoria: TipoModulo; cantidad: string }[]): string {
     if (!items?.length) return '';
     return items.map(it => `${it.categoria} x${it.cantidad}`).join(', ');
+  }
+    get hayEgresosVisibles(): boolean {
+    return this.visible.some((m: Movimiento) => m.tipo === 'egreso');
   }
   @Input() movimientos: Movimiento[] = [];
   private stock: StockService;
@@ -222,5 +227,20 @@ export class StockListComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  // Agregar método para preparar los datos del remito
+  getRemitoData(m: any) {
+    const categoriaPipe = new CategoriaNombrePipe();
+    return {
+      fecha: m.fecha,
+      cliente: '',
+      // @ts-ignore
+      productos: m.items.map(it => ({
+        nombre: it.categoria ? categoriaPipe.transform(it.categoria) : m.nombre,
+        cantidad: it.cantidad,
+        precio: 100 // Si no hay precio, poner 0 o adaptar según tu modelo real
+      }))
+    };
   }
 }
